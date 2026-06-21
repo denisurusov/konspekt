@@ -23,6 +23,12 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-dec-repo-serial | decomposes | node:investigation-repo-structure | node:task-serialization-format | |
 | e-dec-repo-realign | decomposes | node:investigation-repo-structure | node:task-realign-instance | |
 | e-dec-repo-outcomes | decomposes | node:investigation-repo-structure | node:task-outcomes-node-type | |
+| e-dec-curated-oploop | decomposes | node:goal-curated-context | node:investigation-operating-loop | |
+| e-dec-follow-oploop | decomposes | node:goal-follow-thread | node:investigation-operating-loop | |
+| e-dec-oploop-ingestion | decomposes | node:investigation-operating-loop | node:task-ingestion-mode | |
+| e-dec-oploop-reconcile | decomposes | node:investigation-operating-loop | node:task-reconciliation | |
+| e-dec-oploop-trigger | decomposes | node:investigation-operating-loop | node:task-trigger-transport | |
+| e-dec-oploop-review | decomposes | node:investigation-operating-loop | node:task-review-ergonomics | |
 | e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state | |
 | e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence | |
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue | |
@@ -44,6 +50,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
 | e-prod-serial-serialization | produces | node:task-serialization-format | artifact:artifact-serialization | |
+| e-prod-ingestion-spec | produces | node:task-ingestion-mode | artifact:artifact-spec | |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
 | e-mark-curated | marks | waypoint:wp-curated-goal | node:goal-curated-context | |
