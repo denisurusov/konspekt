@@ -1,10 +1,12 @@
 ```yaml
 id: nw-copying-is-the-win
+kind: statement
 review: accepted
-relatedNodeIds: [investigation-competition]
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Noteworthy: Getting copied is the win condition
 

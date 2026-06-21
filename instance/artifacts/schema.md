@@ -1,13 +1,16 @@
 ```yaml
 id: artifact-schema
-name: Draft schema
-pointer: spec/schema.ts
+name: Schema
 kind: code
-review: proposed
+location: spec/schema.ts
+version: v1
+review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: context-and-model
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
-# Artifact: Draft schema
+# Artifact: Schema
 
-Draft v0.1.0 TypeScript; pending reconcile with the canonical schema.
+Canonical TypeScript schema, v1.

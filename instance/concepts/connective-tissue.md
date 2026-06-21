@@ -1,9 +1,13 @@
 ```yaml
 id: concept-connective-tissue
+label: Connective tissue
+aliases: [accumulated context, conventions]
 review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Concept: Connective tissue
 

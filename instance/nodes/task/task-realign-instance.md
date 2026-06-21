@@ -1,16 +1,21 @@
 ```yaml
 id: task-realign-instance
 type: task
-review: proposed
-status: open
+title: Re-serialize the instance to the reconciled spec
+status: resolved
+summary:
+  origin: machine
+  pinned: false
+  updatedAt: 2026-06-21T13:00:00Z
+review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
-# Task: Re-serialize the instance to the reconciled spec
+# Task: Re-serialize the instance to the reconciled spec (resolved)
 
-The instance entities (concepts, noteworthy, artifacts, waypoints, and node
-front-matter) still use the interim v0.1.0 serialization. Re-align them to the
-canonical schema: per-node `Summary`, node `status`, `NoteworthyKind`,
-canonical `Provenance` (conversationId / messageId / timestamp / confidence),
-and move waypoint→branch links into the edge table as kind `marks`.
+Done. Every instance entity now uses the v1 serialization: canonical
+Provenance, per-node Summary and status, NoteworthyKind, and waypoint→branch
+links expressed as `marks` edges in the edge table.

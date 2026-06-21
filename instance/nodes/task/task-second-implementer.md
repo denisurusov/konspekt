@@ -1,10 +1,18 @@
 ```yaml
 id: task-second-implementer
 type: task
-review: proposed
+title: Find the second implementer
+status: open
+summary:
+  origin: machine
+  pinned: false
+  updatedAt: 2026-06-21T13:00:00Z
+review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Task: Find the second implementer
 

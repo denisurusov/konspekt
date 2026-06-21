@@ -1,13 +1,21 @@
 ```yaml
 id: task-serialization-format
 type: task
-review: proposed
+title: Lock the serialization format
+status: resolved
+summary:
+  origin: machine
+  pinned: false
+  updatedAt: 2026-06-21T13:00:00Z
+review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
-# Task: Decide serialization format concretely
+# Task: Lock the serialization format (resolved)
 
-Per-entity Markdown with YAML front-matter is the current dogfooded choice.
-Confirm whether this holds, or whether per-entity JSON/YAML (or aggregate
-files) serves the reference implementation better for read/write.
+Done. Per-entity files with YAML front-matter plus a Markdown body, one
+directory per NodeType, edges in a single table. Locked as **v1** in
+`spec/SERIALIZATION.md`.

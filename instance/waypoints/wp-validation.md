@@ -1,14 +1,15 @@
 ```yaml
 id: wp-validation
-type: waypoint
+kind: decision
+timestamp: 2026-06-21T13:00:00Z
 review: accepted
-at: 2026-06-21
-branchInto: [investigation-validation]
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Waypoint: Branch into validation strategy
 
 Decision to explore how the product would be validated; opened the
-dogfooding-vs-proof line.
+dogfooding-vs-proof line. Branch: investigation-validation.

@@ -1,12 +1,14 @@
 ```yaml
 id: artifact-spec
 name: Conceptual spec
-pointer: spec/SPEC.md
-kind: document
+kind: doc
+location: spec/SPEC.md
 review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: context-and-model
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Artifact: Conceptual spec
 

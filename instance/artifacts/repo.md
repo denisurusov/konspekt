@@ -1,12 +1,14 @@
 ```yaml
 id: artifact-repo
 name: Repository
-pointer: https://github.com/denisurusov/konspekt
-kind: repo
+kind: link
+location: https://github.com/denisurusov/konspekt
 review: accepted
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Artifact: Repository
 

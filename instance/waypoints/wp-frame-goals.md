@@ -1,14 +1,16 @@
 ```yaml
 id: wp-frame-goals
-type: waypoint
+kind: decision
+timestamp: 2026-06-21T13:00:00Z
 review: accepted
-at: 2026-06-21
-branchInto: [goal-follow-thread, goal-portability]
 provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
 # Waypoint: Frame the two goals
 
 Decision to open the project by branching into its two goals — and the
-insight that they converge on one artifact.
+insight that they converge on one artifact. Branches: goal-follow-thread,
+goal-portability (see `marks` edges).

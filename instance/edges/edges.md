@@ -1,14 +1,49 @@
+```yaml
+provenance:
+  conversationId: goals-and-motivation
+  timestamp: 2026-06-21T13:00:00Z
+review: accepted
+```
 # Edges
 
-Typed, directional relationships between nodes. The goal tree and the
-associative graph are one set, distinguished by `kind`. (Provisional
-serialization: a single index; per-edge files are an alternative if this
-grows large.)
+Single typed edge table (konspekt serialization v1). `from` / `to` are
+`type:id`. `provenance` and `review` are the file-level defaults above.
+`weight` is meaningful only for `relates`.
 
-| from | kind | to |
-|---|---|---|
-| goal-portability | parent-of | investigation-repo-structure |
-| goal-follow-thread | relates-to | goal-portability |
-| investigation-repo-structure | refines | goal-portability |
-| task-reconcile-schema | relates-to | investigation-repo-structure |
-| task-second-implementer | relates-to | goal-portability |
+| id | kind | from | to | weight |
+|----|------|------|----|--------|
+| e-dec-port-repo | decomposes | node:goal-portability | node:investigation-repo-structure | |
+| e-dec-port-comp | decomposes | node:goal-portability | node:investigation-competition | |
+| e-dec-port-naming | decomposes | node:goal-portability | node:investigation-naming | |
+| e-dec-port-second | decomposes | node:goal-portability | node:task-second-implementer | |
+| e-dec-port-license | decomposes | node:goal-portability | node:task-license | |
+| e-dec-follow-valid | decomposes | node:goal-follow-thread | node:investigation-validation | |
+| e-dec-repo-reconcile | decomposes | node:investigation-repo-structure | node:task-reconcile-schema | |
+| e-dec-repo-serial | decomposes | node:investigation-repo-structure | node:task-serialization-format | |
+| e-dec-repo-realign | decomposes | node:investigation-repo-structure | node:task-realign-instance | |
+| e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state | |
+| e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence | |
+| e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue | |
+| e-men-port-conv | mentions | node:goal-portability | concept:concept-goals-convergence | |
+| e-men-port-legible | mentions | node:goal-portability | concept:concept-legible-over-defensible | |
+| e-men-valid-need | mentions | node:investigation-validation | concept:concept-need-not-mechanic | |
+| e-men-valid-gap | mentions | node:investigation-validation | concept:concept-second-implementer-gap | |
+| e-men-comp-legible | mentions | node:investigation-competition | concept:concept-legible-over-defensible | |
+| e-men-second-gap | mentions | node:task-second-implementer | concept:concept-second-implementer-gap | |
+| e-not-valid-hyp | notes | node:investigation-validation | noteworthy:nw-hypotheses-not-proof | |
+| e-not-valid-vocab | notes | node:investigation-validation | noteworthy:nw-validation-is-vocabulary | |
+| e-not-comp-copy | notes | node:investigation-competition | noteworthy:nw-copying-is-the-win | |
+| e-not-comp-absorb | notes | node:investigation-competition | noteworthy:nw-platforms-absorb | |
+| e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
+| e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
+| e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
+| e-prod-serial-serialization | produces | node:task-serialization-format | artifact:artifact-serialization | |
+| e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
+| e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
+| e-mark-valid | marks | waypoint:wp-validation | node:investigation-validation | |
+| e-mark-open | marks | waypoint:wp-openness | node:investigation-competition | |
+| e-mark-naming | marks | waypoint:wp-naming | node:investigation-naming | |
+| e-mark-repo | marks | waypoint:wp-repo-structure | node:investigation-repo-structure | |
+| e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
+| e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
+| e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |

@@ -1,25 +1,21 @@
-# Project: konspekt
-
-> The Project entity and root index. The rest of the model lives in sibling
-> directories (`nodes/`, `concepts/`, `noteworthy/`, `artifacts/`,
-> `waypoints/`, `edges/`).
-
 ```yaml
 id: project-konspekt
-name: konspekt
-review: accepted
-provenance:
-  source: conversation:goals-and-motivation
-  capturedAt: 2026-06-21
+goal: >-
+  A portable, human-readable record of a project's evolving state across
+  generative-AI conversations and platforms.
+summary:
+  origin: machine
+  pinned: false
+  updatedAt: 2026-06-21T13:00:00Z
+createdAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-06-21T13:00:00Z
 ```
+# konspekt
 
-## Goals
+Two goals that converge on one artifact: help people follow gen-AI
+conversations by externalizing project state, and port projects across
+platforms via a platform-neutral representation. Impact-primary and
+open-source — adoption, even by copying, is the win.
 
-1. Follow the thread — `nodes/goal-follow-thread.md`
-2. Port across platforms — `nodes/goal-portability.md`
-
-## Motivation
-
-Impact-primary over profit. The win is the industry handling project
-portability well, by whatever hand; being adopted or copied is success, not
-a threat. Will be open-sourced.
+Index: `nodes/`, `concepts/`, `noteworthy/`, `artifacts/`, `waypoints/`,
+`edges/`.
