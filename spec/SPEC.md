@@ -1,32 +1,52 @@
-# konspekt — conceptual data model (draft)
+# konspekt — data model (spec)
 
-This is the portable vocabulary: the small set of concepts that appear to be real across workflows, not just one author's. The discipline is to capture the *concept* and leave the *mechanic* to implementers — a format is only a standard if someone who didn't design it can build a correct importer from this document.
+The konspekt standard: the entity set, the single edge table, and the derived views a project's state is expressed in. This supersedes the v0.1.0 draft and is reconciled from the canonical data-model design.
 
-> Status: draft. Concepts are more settled than field-level shapes. The TypeScript in `schema.ts` is provisional and must be reconciled with the canonical schema developed in design discussion.
+> Guiding principle: store each fact **once**, and make every "inventory" a *query over edges* rather than a stored list. Duplication is the enemy; drift follows duplication.
+
+## Principles
+
+1. **Single source of truth.** Concepts, noteworthy items, and artifacts are first-class entities, stored once. "This node's concepts" and "the project's concepts" are *queries over edges*, not stored lists — dedup is structural, the project aggregate is free, cross-linking is automatic.
+2. **One graph, not two.** Goal decomposition (hierarchical) and cross-links (associative) share one `Edge` table, distinguished by `kind`. The goal tree is `edges where kind = "decomposes"`; everything else is a filtered view.
+3. **Auditable by construction.** Every entity carries `provenance` (which conversation/message it was extracted from, with optional confidence) and a `review` state (`proposed → accepted / rejected`), because an LLM maintainer *proposes* graph updates that a human accepts.
+4. **Summaries compose, humans win.** Each node owns its `summary`; the project summary composes the node summaries; a `pinned`, human-origin summary is never overwritten by the maintainer.
 
 ## Entities
 
-**Project** — the top-level container. Identity, the project's goals, and metadata. Everything else hangs off a project.
+- **Project** — root: `goal`, a composed `summary`, timestamps. No stored aggregates; they're views.
+- **GraphNode** — a unit of work, typed `goal | investigation | experiment | topic | task | note`. Carries its own `summary` and a `status` (`open | active | resolved | abandoned`). Hierarchy lives in edges, so a node can sit under more than one parent.
+- **Concept** — `label`, `definition`, `aliases` (surface forms for dedup / merge). Referenced via edges, never copied.
+- **Noteworthy** — `kind` (`fact | statement | decision | assumption | constraint`) and `text`, with a `status` that matters for some kinds (an assumption is unvalidated / validated / refuted; a constraint is active / lifted).
+- **Artifact** — `name`, `kind`, `location`, `version`.
+- **Waypoint** — a timestamped *event*, `kind` (`decision | milestone | pivot`), that points at the node/branch it sits on (edge kind `marks`). Waypoints are the **timeline** axis and are deliberately *not* part of the goal tree.
 
-**Node** — a unit of project state, typed by a fixed enum: `goal | investigation | experiment | topic | task | note`. (`decision` is deliberately *not* a node type — decisions live as Waypoints or Noteworthy items.) Nodes are the substance of "what is going on" in a project.
+## The decision rule
 
-**Concept** — a reusable idea or term referenced across nodes. Concepts let the graph express "these nodes are all about X" without repeating X.
+One underlying decision, up to three representations, with a single rule for each — not three parallel definitions:
 
-**Noteworthy** — a flagged observation or insight worth preserving. This is where the *underlying need* behind a convention gets recorded ("I keep losing which decision is current") as distinct from the mechanic that served it. Noteworthy items are what port to other users.
+- Always recorded once as a **Noteworthy** item (`kind: decision`) — the atomic, always-true record.
+- Additionally a **Waypoint** *if* it's an inflection point worth seeing on the timeline.
+- Additionally a **Node** *only if* it opens a branch of work to track.
 
-**Artifact** — a produced output (a document, a code file, a deck) with a pointer to where it lives. The project references artifacts; it does not necessarily contain them.
+## Edges
 
-**Waypoint** — marks **the decision to start a branch in the conversation**: a fork toward a new goal or line of inquiry. A waypoint records *why the graph grew a new branch here* and references the node(s) that branch opened (`branchInto`). Read in sequence, waypoints reconstruct how the project got here as a series of deliberate forks.
+One typed table; `from` / `to` are `EntityRef`s; `weight` is meaningful only for `relates`.
 
-**Edge** — a typed, directional relationship between nodes (for example: parent-of, relates-to, refines, supersedes, derived-from). The graph's structure lives in its edges; the goal tree and the associative graph are one edge set, distinguished by kind.
+- `decomposes` — node → node (goal tree)
+- `mentions` — node → concept
+- `relates` — concept → concept (untyped association; optional `weight` for strength)
+- `produces` — node → artifact
+- `notes` — node → noteworthy
+- `marks` — waypoint → node (the branch the waypoint sits on / opened)
 
-## Cross-cutting
+## Derived views (never stored)
 
-**Provenance** — every element records where it came from: which conversation, platform, and point in the exchange. Provenance is what makes the record trustworthy and a cross-platform move auditable.
+- project concept inventory = concepts with any inbound `mentions` edge
+- node concept inventory = concepts with a `mentions` edge from that node
+- goal tree = `edges where kind = "decomposes"`
+- timeline = waypoints ordered by `timestamp`
+- open assumptions = noteworthy where `kind = "assumption"` and `status = "unvalidated"`
 
-**Review state** — human-in-the-loop status for any element a model proposed: e.g. proposed / accepted / superseded. The format assumes machine-suggested content that a human curates.
+## Note on concept relationships
 
-## Design notes
-
-- The two goals (follow-the-thread and cross-platform portability) converge on this one representation. Features that only serve in-platform sense-making are out of scope for the *standard* even if a reference tool offers them.
-- Prefer the lowest-common-denominator. If a concept can't survive a copy-paste between two platforms, it doesn't belong in the portable core.
+Concept-to-concept edges exist but are **untyped** (kind `relates`), carrying an optional numeric `weight` instead of a relationship ontology — deliberately avoiding a philosophical rabbit hole.

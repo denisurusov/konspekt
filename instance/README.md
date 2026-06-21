@@ -1,25 +1,29 @@
 # instance
 
 konspekt, eating its own dog food: the live state of *building konspekt*,
-recorded in konspekt's own (still-forming) format. The project is its own
-first guinea pig.
+recorded in konspekt's own format. The project is its own first guinea pig.
 
-The point of dogfooding here is not proof — the author is a non-representative
-user who tolerates friction others won't. It is to generate *hypotheses*:
-each time a convention earns its keep, the portable lesson is the underlying
-need it served, not the mechanic.
+The point of dogfooding is not proof — the author is a non-representative user
+who tolerates friction others won't. It is to generate *hypotheses*: each time
+a convention earns its keep, the portable lesson is the underlying need it
+served, not the mechanic.
 
 ## Structure
 
-State is split into per-entity files and directories mirroring `../spec/SPEC.md`:
+Per-entity files and directories mirroring `../spec/`:
 
-- `project.md` — the Project entity and an index.
-- `nodes/` — typed units of state (`goal | investigation | experiment | topic | task | note`).
+- `project.md` — the Project entity and index.
+- `nodes/<type>/` — one directory per NodeType (`goal/`, `investigation/`, `task/`, …), one file per node.
 - `concepts/` — reusable ideas referenced across nodes.
 - `noteworthy/` — insights worth preserving (incl. decisions).
 - `artifacts/` — produced outputs, by pointer.
-- `waypoints/` — decisions to branch the conversation toward a new line; each points at the node(s) it opened via `branchInto`.
-- `edges/` — typed relationships between nodes.
+- `waypoints/` — branch-point events; each marks the node its branch opened.
+- `edges/edges.md` — the single typed edge table.
 
-Serialization is provisional: YAML front-matter for the cross-cutting fields
-(id, type, review, provenance) plus a Markdown body.
+## Note on serialization
+
+The spec has been reconciled to the canonical model (first-class inventory
+entities with edge-query views, a single typed edge table, per-node
+summaries, provenance + review on every entity, the pinned-summary pattern).
+The instance entities still use the interim v0.1.0 serialization; re-aligning
+them is tracked in `nodes/task/task-realign-instance.md`.
