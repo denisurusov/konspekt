@@ -59,6 +59,9 @@ export type EdgeKind =
 export interface Provenance {
   conversationId: string;
   messageId?: string;
+  contentHash?: string; // hash of the source message; "same messageId, changed
+                        // hash" flags an edited/branched message so the
+                        // idempotence watermark re-processes it (RECONCILIATION.md)
   timestamp: string;   // ISO 8601
   confidence?: number; // 0..1, from the maintainer LLM
 }
