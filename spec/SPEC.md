@@ -47,6 +47,29 @@ One typed table; `from` / `to` are `EntityRef`s; `weight` is meaningful only for
 - timeline = waypoints ordered by `timestamp`
 - open assumptions = noteworthy where `kind = "assumption"` and `status = "unvalidated"`
 
+## Human vocabulary (v1)
+
+A small set of **distinct verbs** a human issues to assert judgments the reactive maintainer shouldn't make on its own. Every verb is a *convention, not a requirement*: it reads as plain English over an entity reference, so a vanilla LLM on a platform that has never heard of konspekt can approximate the right effect with no parser, runtime, or special tokens. The litmus test — if skipping a verb *breaks* anything, it has stopped being a convention and become a chokepoint.
+
+A human-issued verb **carries its own acceptance**: the resulting change lands `review: accepted`, not `proposed`. The command *is* the acceptance. (The reactive maintainer, by contrast, only ever proposes.)
+
+These are **authority verbs** — the override/guarantee moments, and precisely the status transitions reconciliation detects poorly from prose:
+
+| verb | reference | effect |
+|------|-----------|--------|
+| `pin <ref>` | node / project / any summarized entity | `summary.pinned = true`; the maintainer never regenerates that summary |
+| `validate <ref>` | noteworthy (assumption) | `status → validated` |
+| `refute <ref>` | noteworthy (assumption) | `status → refuted` |
+| `resolve <ref>` | node | `status → resolved` |
+| `abandon <ref>` | node | `status → abandoned` |
+| `lift <ref>` | noteworthy (constraint) | `status → lifted` |
+
+`<ref>` is an entity `id` or a natural-language description the maintainer resolves to one. An ambiguous reference is surfaced for disambiguation, never guessed.
+
+**Design intent.** These distinct verbs are *surface sugar* over two generic constructs — a pin operation and a generic `mark <ref> <state>` status transition. They are kept distinct because five short, self-documenting verbs are easier to remember and reach for than one verb plus a state vocabulary to look up. The generic form is what the sugar desugars to, not a separate feature; new authority verbs are added only when they name a genuinely distinct human call.
+
+**Deliberately excluded.** *Capture* verbs (force-create a `task`, `concept`, `constraint`, … directly as `accepted`) are **deferred**. The reactive layer already catches most net-new entities, so capture is convenience, not authority, and shipping it on spec is the coverage-creep that turns a vocabulary into a language you must memorize — migrating the recall problem from the LLM onto the human. Promote it only if reactive capture proves leaky in practice. Note that `note:` is reserved for a separate human scratchpad (NOTES.md) and is **not** a konspekt `Noteworthy` capture verb; konspekt capture, if ever added, uses the `kind` directly (`decision:`, `fact:`).
+
 ## Note on concept relationships
 
 Concept-to-concept edges exist but are **untyped** (kind `relates`), carrying an optional numeric `weight` instead of a relationship ontology — deliberately avoiding a philosophical rabbit hole.
