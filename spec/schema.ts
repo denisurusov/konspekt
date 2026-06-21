@@ -1,21 +1,22 @@
 // konspekt schema — DRAFT v0.1.0
 //
-// Provisional. Field shapes here are a sketch, not the canonical model.
-// They must be reconciled with the schema developed in design discussion
-// before this is treated as authoritative. Concepts are described in SPEC.md.
+// Provisional. Field shapes here are a sketch, not the canonical model, and
+// must be reconciled with the schema developed in design discussion before
+// this is treated as authoritative. Concepts are described in SPEC.md.
 
+// Fixed node-type enum. `decision` is intentionally absent: decisions are
+// captured as Waypoints or Noteworthy items.
 export type NodeType =
   | "goal"
   | "investigation"
-  | "question"
-  | "decision"
+  | "experiment"
+  | "topic"
   | "task"
   | "note";
 
 export type ReviewState = "proposed" | "accepted" | "superseded";
 
 export interface Provenance {
-  /** Where this element originated. */
   source: string; // e.g. conversation id / platform
   capturedAt: string; // ISO 8601
   note?: string;
@@ -58,21 +59,24 @@ export interface Artifact extends Reviewable {
   id: string;
   name: string;
   pointer: string; // path, url, or other locator
-  kind?: string; // e.g. document, code, deck
+  kind?: string; // e.g. document, code, deck, repo
 }
 
+// A Waypoint marks the decision to start a branch in the conversation.
 export interface Waypoint extends Reviewable {
   id: string;
   at: string; // ISO 8601
   summary: string;
+  /** Node id(s) the branch opened. */
+  branchInto?: string[];
 }
 
 export type EdgeKind =
-  | "depends-on"
+  | "parent-of"
+  | "relates-to"
   | "refines"
   | "supersedes"
-  | "derived-from"
-  | "relates-to";
+  | "derived-from";
 
 export interface Edge extends Reviewable {
   id: string;
