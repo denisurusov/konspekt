@@ -37,3 +37,26 @@ Two consequences fall out of the ladder:
 An alias is a *synonym* — an alternate name for the same concept — not a short
 label for an entity's contents (that is what `summary` is for). Aliases live on
 `Concept`.
+
+## Alias index (derived, never stored)
+
+The `label + alias → id` lookup is a **derived view**, built at reconcile time
+by scanning Concept entities — not a stored file. Aliases live on Concept; the
+index is a query over them, exactly as the concept inventory is a query over
+`mentions` edges. This preserves a single source of truth: no sync step,
+nothing to invalidate on create / merge / relabel, nothing to churn the diff.
+It also matches the model's rule that derived views are never serialized.
+
+- The index is a **multimap**, not a map: a normalized surface form maps to
+  *one or more* ids. A single-id key resolves deterministically; a multi-id key
+  returns the candidate set that escalates. This is how non-unique aliases stay
+  safe.
+- The **normalization function** applied while building (case, whitespace,
+  punctuation folding) is the actual deterministic match key — it defines what
+  counts as "the same surface form" — and must be specified explicitly.
+- Build cost is a trivial in-memory map over a human-scale concept set; the
+  performance argument for materialization does not apply. Caching would only
+  matter at a scale beyond this project, and even then is a cache, not a commit.
+- Scope: this concerns the *deterministic* alias index only. If the fuzzy tier
+  later needs an expensive structure (e.g. an embedding index for semantic
+  matching), that is a separate caching decision and does not change this one.
