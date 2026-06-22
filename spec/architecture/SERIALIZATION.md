@@ -14,6 +14,7 @@ This is the locked, lowest-common-denominator on-disk form: human-readable files
   noteworthy/<id>.md
   artifacts/<id>.md
   waypoints/<id>.md
+  sources/<contentHash>.md  # content-addressed provenance excerpts (not entities)
   edges/edges.md            # single typed edge table
 ```
 
@@ -34,12 +35,16 @@ Rules:
 
 - `id` is kebab-case, globally unique, and equals the filename without `.md`.
 - `Summary` serializes as `summary: { origin, pinned, updatedAt }`; its `text` lives in the body (no duplication).
-- `Provenance` serializes as a nested map (`conversationId`, `messageId?`, `timestamp`, `confidence?`).
+- `Provenance` serializes as a nested map (`sourceRef`, `contentHash`, `timestamp`, `confidence?`, `conversationId?`). `sourceRef` + `contentHash` are the content-addressed source pointer; `conversationId` is optional grouping metadata. (`messageId` was retired — see `../data-model/schema.ts`.)
 - A file may declare a file-level `provenance` / `review` default when every entry shares it (used by the edge table).
 
 ## Edges
 
 `edges/edges.md` is a single table — `id | kind | from | to | weight` — where `from` / `to` are `type:id` refs. `provenance` and `review` are declared once at file level. Per-edge files are a valid v1 variant if the table grows unwieldy.
+
+## Sources
+
+`sources/<contentHash>.md` holds the **source excerpts** an entity's provenance points at — the addressable text an extraction was drawn from, written push-based at extraction time. These are *not* graph entities: plain Markdown, no front-matter, no `id`. The filename **is** the excerpt's git blob SHA, so `provenance.sourceRef` resolves to `sources/<sourceRef>.md`, and the verify probe is `git hash-object` of that file equalling the stored `contentHash` (`RECONCILIATION.md`). The directory is **append-only**: editing an excerpt yields a new hash and a new file, never an in-place rewrite. Entities predating the mechanism may carry provenance without `sourceRef` / `contentHash`; their backfill is a separate, human-assisted pass.
 
 ## Versioning
 
