@@ -36,7 +36,7 @@ Before changing repository content, read:
 
 1. `README.md`
 2. the relevant file under `spec/`
-3. the relevant file under `instance/`, when changing live project-state records
+3. the relevant file under `.konspekt/instance/`, when changing live project-state records
 4. `reference/README.md`, when touching the reference implementation area
 
 Do not rely on memory when the current repository can be inspected directly.
@@ -52,12 +52,14 @@ Keep these surfaces distinct:
 |---------|-------------|
 | `spec/` | Normative standard and architecture. |
 | `reference/` | Reference implementation area. |
-| `instance/` | Live konspekt-format project state for this repository. |
+| `.konspekt/` | konspekt umbrella: the portable instance plus this repo's operating envelope. |
+| `.konspekt/instance/` | Live konspekt-format project state (the portable unit; `sources/` included). |
 | `agents/skills/` | Shared skills consumed by provider-specific integrations. |
 | `.claude/`, `.opencode/`, `.codex/` | Provider compatibility surfaces. |
 
 Do not let instance notes become the standard, and do not let provider-specific
-paths become the canonical skill source.
+paths become the canonical skill source. Do not let the operating envelope
+(`.konspekt/OPERATING.md`, `.konspekt/NOTES.md`) leak into the portable instance.
 
 ## 4. Editing Discipline
 
