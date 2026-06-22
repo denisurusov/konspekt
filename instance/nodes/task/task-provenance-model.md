@@ -6,15 +6,15 @@ status: resolved
 summary:
   origin: machine
   pinned: false
-  updatedAt: 2026-06-22T18:30:00Z
+  updatedAt: 2026-06-22T18:45:00Z
 review: accepted
 provenance:
-  sourceRef: 8422d16ea0723131e8877d2fd4708017f74dd17a
-  contentHash: 8422d16ea0723131e8877d2fd4708017f74dd17a
+  sourceRef: cac9f56277870404ef9a525efd4c773c75740175
+  contentHash: cac9f56277870404ef9a525efd4c773c75740175
   timestamp: 2026-06-22T18:00:00Z
   conversationId: provenance-as-chat-text
 createdAt: 2026-06-22T18:00:00Z
-updatedAt: 2026-06-22T18:30:00Z
+updatedAt: 2026-06-22T18:45:00Z
 ```
 # Task: Provenance model — content-addressed source (resolved)
 
@@ -33,6 +33,7 @@ Specced across `spec/data-model/schema.ts`, `spec/data-model/SPEC.md`, and
 Mechanism started: source excerpts live at `instance/sources/<contentHash>.md`
 (git blob SHA = contentHash), documented in `instance/sources/README.md`. This
 session's entities are the first stamped under it and verify against
-`instance/sources/8422d16ea0723131e8877d2fd4708017f74dd17a.md`. Remaining:
-human-assisted backfill of entities predating the mechanism, which still carry
-only `conversationId` + `timestamp`.
+`instance/sources/cac9f56277870404ef9a525efd4c773c75740175.md` (verbatim spans
+from both sides; an earlier excerpt that summarized the assistant turns is
+superseded). Remaining: human-assisted backfill of entities predating the
+mechanism, which still carry only `conversationId` + `timestamp`.

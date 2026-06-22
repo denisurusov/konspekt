@@ -3,12 +3,12 @@ id: nw-push-based-idempotence
 kind: statement
 review: accepted
 provenance:
-  sourceRef: 8422d16ea0723131e8877d2fd4708017f74dd17a
-  contentHash: 8422d16ea0723131e8877d2fd4708017f74dd17a
+  sourceRef: cac9f56277870404ef9a525efd4c773c75740175
+  contentHash: cac9f56277870404ef9a525efd4c773c75740175
   timestamp: 2026-06-22T18:00:00Z
   conversationId: provenance-as-chat-text
 createdAt: 2026-06-22T18:00:00Z
-updatedAt: 2026-06-22T18:30:00Z
+updatedAt: 2026-06-22T18:45:00Z
 ```
 # Noteworthy: Push-based ingestion makes match-level dedup primary
 
