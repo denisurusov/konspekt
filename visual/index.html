@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>konspekt · context explorer</title>
+<!--
+  konspekt visual — static context explorer (v0, read-only)
+
+  Loads data/snapshot.js (a pure function of the instance/ tree) and renders
+  the decomposes DAG: goals at the top, tasks at the bottom. Click a spine
+  node to expand its satellites (concepts via `mentions`, noteworthy via
+  `notes`, artifacts via `produces`). Click anything for detail. The problems
+  panel surfaces the conformance check baked by the build.
+
+  No server, no build step to view: open this file directly. No writes.
+  Time, status, and review are intentionally NOT encoded as visual channels
+  in v0 — every node shows regardless of status. They become filters later.
+-->
+<style>
+  :root {
+    --bg: #fbfaf8;
+    --panel: #ffffff;
+    --ink: #1c1b19;
+    --muted: #6c6a66;
+    --faint: #908d88;
+    --line: #e4e1db;
+    --line-strong: #cfccc5;
+    --edge: #c4c0b8;
+    --sel: #b4530a;
+    --goal: #4f46e5;
+    --goal-bg: #eef0ff;
+    --investigation: #0f766e;
+    --investigation-bg: #e6f4f1;
+    --task: #b45309;
+    --task-bg: #fbf0e2;
+    --concept: #7c3aed;
+    --concept-bg: #f3edfd;
+    --noteworthy: #be123c;
+    --noteworthy-bg: #fdecef;
+    --artifact: #1d4ed8;
+    --artifact-bg: #e8effc;
+    --apex: #3f3c37;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px; line-height: 1.45; overflow: hidden;
+  }
+  #app { display: grid; grid-template-columns: 1fr 340px; grid-template-rows: auto 1fr; height: 100vh; }
+  header {
+    grid-column: 1 / 3; display: flex; align-items: center; gap: 14px;
+    padding: 9px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  header .brand { font-weight: 650; letter-spacing: .2px; }
+  header .brand span { color: var(--muted); font-weight: 400; }
+  header .goal { color: var(--muted); font-size: 12.5px; max-width: 46ch; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  header .spacer { flex: 1; }
+  .ctrl {
+    font: inherit; font-size: 12.5px; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line-strong); border-radius: 7px; padding: 5px 10px;
+    cursor: pointer; user-select: none;
+  }
+  .ctrl:hover { background: #f4f2ee; }
+  .ctrl.on { background: #efece6; border-color: var(--faint); }
+  #search {
+    font: inherit; font-size: 12.5px; padding: 5px 9px; width: 180px;
+    border: 1px solid var(--line-strong); border-radius: 7px; background: var(--panel);
+  }
+  #search:focus { outline: 2px solid var(--goal-bg); border-color: var(--goal); }
+  #stage { position: relative; overflow: hidden; background:
+    radial-gradient(circle at 1px 1px, #ece9e3 1px, transparent 0) 0 0 / 26px 26px var(--bg); }
+  svg { width: 100%; height: 100%; display: block; cursor: grab; }
+  svg.grabbing { cursor: grabbing; }
+  .node { cursor: pointer; }
+  .node rect, .node .pill { stroke-width: 1.4; }
+  .node text { pointer-events: none; }
+  .ntype { font-size: 9px; letter-spacing: .6px; text-transform: uppercase; }
+  .nlabel { font-size: 11.5px; font-weight: 550; }
+  .slabel { font-size: 10.5px; font-weight: 500; }
+  .edge { fill: none; stroke: var(--edge); stroke-width: 1.4; }
+  .apexedge { fill: none; stroke: var(--line-strong); stroke-width: 1.3; stroke-dasharray: 3 4; }
+  .tether { fill: none; stroke-width: 1.2; opacity: .5; }
+  .tether.mentions { stroke: var(--concept); }
+  .tether.notes { stroke: var(--noteworthy); }
+  .tether.produces { stroke: var(--artifact); }
+  .relates { fill: none; stroke: #9b8cc0; stroke-dasharray: 2 5; }
+  .dim { opacity: .22; }
+  .sel-ring { fill: none; stroke: var(--sel); stroke-width: 2.4; }
+  /* right panel */
+  aside { grid-row: 2; grid-column: 2; border-left: 1px solid var(--line); background: var(--panel);
+    display: flex; flex-direction: column; min-height: 0; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { flex: 1; text-align: center; padding: 9px 6px; font-size: 12.5px; cursor: pointer; color: var(--muted); }
+  .tab.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -2px 0 var(--sel); }
+  .tab .count { display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 4px;
+    border-radius: 9px; font-size: 10.5px; background: #efece6; color: var(--muted); }
+  .tab .count.err { background: var(--noteworthy-bg); color: var(--noteworthy); }
+  .panebody { overflow: auto; padding: 14px 15px; min-height: 0; }
+  .empty { color: var(--faint); font-size: 13px; padding-top: 20px; text-align: center; }
+  .d-kicker { font-size: 10px; letter-spacing: .7px; text-transform: uppercase; color: var(--faint); }
+  .d-title { font-size: 16px; font-weight: 650; margin: 2px 0 8px; line-height: 1.25; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 11px; }
+  .chip { font-size: 10.5px; padding: 2px 7px; border-radius: 20px; border: 1px solid var(--line);
+    color: var(--muted); background: #faf8f4; }
+  .chip.k { border: none; color: #fff; }
+  .d-body { font-size: 13px; color: #34322e; white-space: normal; }
+  .d-body p { margin: 0 0 8px; }
+  .d-body code { background: #f1efe9; padding: 1px 4px; border-radius: 4px; font-size: 12px; }
+  .d-sec { margin-top: 14px; }
+  .d-sec h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: .4px; text-transform: uppercase; color: var(--faint); }
+  .erow { display: flex; gap: 7px; align-items: baseline; padding: 3px 0; font-size: 12.5px; }
+  .erow .ek { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--faint);
+    min-width: 74px; }
+  .erow a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--line-strong); cursor: pointer; }
+  .erow a:hover { border-bottom-color: var(--sel); color: var(--sel); }
+  .meta-kv { font-size: 12px; color: var(--muted); }
+  .meta-kv b { color: var(--ink); font-weight: 600; }
+  .prob { border: 1px solid var(--line); border-left-width: 3px; border-radius: 6px;
+    padding: 8px 10px; margin-bottom: 8px; font-size: 12.5px; }
+  .prob.error { border-left-color: var(--noteworthy); }
+  .prob.warning { border-left-color: var(--task); }
+  .prob .code { font-weight: 600; font-size: 11px; letter-spacing: .3px; }
+  .prob.error .code { color: var(--noteworthy); }
+  .prob.warning .code { color: var(--task); }
+  .prob .msg { color: #44413c; margin-top: 2px; }
+  .prob .ref { color: var(--goal); cursor: pointer; }
+  .legend { position: absolute; left: 12px; bottom: 12px; background: rgba(255,255,255,.92);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 11px; color: var(--muted); }
+  .legend .row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  .legend .sw { width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  .hint { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--faint); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">konspekt <span>· context explorer</span></div>
+    <div class="goal" id="projectGoal"></div>
+    <div class="spacer"></div>
+    <input id="search" placeholder="search id / label…" autocomplete="off" />
+    <button class="ctrl" id="btnExpand">Expand all</button>
+    <button class="ctrl" id="btnCollapse">Collapse</button>
+    <button class="ctrl" id="btnFit">Fit</button>
+  </header>
+
+  <div id="stage">
+    <svg id="svg"><g id="vp"></g></svg>
+    <div class="legend" id="legend"></div>
+    <div class="hint">scroll to zoom · drag to pan · click a node to expand</div>
+  </div>
+
+  <aside>
+    <div class="tabs">
+      <div class="tab on" data-tab="detail">Detail</div>
+      <div class="tab" data-tab="problems">Problems <span class="count" id="probCount">0</span></div>
+    </div>
+    <div class="panebody" id="detailPane"><div class="empty">Select a node to inspect it.</div></div>
+    <div class="panebody" id="problemsPane" style="display:none"></div>
+  </aside>
+</div>
+
+<script src="./data/snapshot.js"></script>
+<script>
+(function () {
+  "use strict";
+  const K = window.__KONSPEKT__;
+  if (!K) { document.body.innerHTML = "<p style='padding:20px'>data/snapshot.js failed to load. Run <code>node build/snapshot.mjs</code>.</p>"; return; }
+
+  // ---------- index everything by id ----------
+  const ent = new Map();
+  const add = (e) => { if (e && e.id) ent.set(e.id, e); };
+  add(K.project);
+  for (const g of ["nodes","concepts","noteworthy","artifacts","waypoints"]) (K[g]||[]).forEach(add);
+
+  const nodeIds = new Set((K.nodes||[]).map(n => n.id));
+  const edges = K.edges || [];
+  const decomposes = edges.filter(e => e.kind === "decomposes" && nodeIds.has(e.from.id) && nodeIds.has(e.to.id));
+
+  // satellite edges: node -> {concept|noteworthy|artifact}
+  const SAT_KIND = { mentions: "concept", notes: "noteworthy", produces: "artifact" };
+  const satByOwner = new Map(); // ownerNodeId -> [{id, kind, type}]
+  for (const e of edges) {
+    if (!SAT_KIND[e.kind]) continue;
+    if (!nodeIds.has(e.from.id)) continue;
+    const t = ent.get(e.to.id); if (!t) continue;
+    if (!satByOwner.has(e.from.id)) satByOwner.set(e.from.id, []);
+    satByOwner.get(e.from.id).push({ id: e.to.id, kind: e.kind, type: SAT_KIND[e.kind] });
+  }
+  for (const arr of satByOwner.values()) arr.sort((a,b) => a.id < b.id ? -1 : 1);
+  const relates = edges.filter(e => e.kind === "relates");
+
+  // ---------- deterministic longest-path layout ----------
+  const parents = new Map(), children = new Map();
+  for (const id of nodeIds) { parents.set(id, []); children.set(id, []); }
+  for (const e of decomposes) { children.get(e.from.id).push(e.to.id); parents.get(e.to.id).push(e.from.id); }
+  const rankMemo = new Map();
+  function rank(id, stack) {
+    if (rankMemo.has(id)) return rankMemo.get(id);
+    stack = stack || new Set();
+    if (stack.has(id)) return 0;           // cycle guard (shouldn't happen in a DAG)
+    stack.add(id);
+    const ps = parents.get(id) || [];
+    const r = ps.length ? 1 + Math.max(...ps.map(p => rank(p, stack))) : 0;
+    stack.delete(id); rankMemo.set(id, r); return r;
+  }
+  const byRank = new Map();
+  for (const id of nodeIds) { const r = rank(id); if (!byRank.has(r)) byRank.set(r, []); byRank.get(r).push(id); }
+  for (const arr of byRank.values()) arr.sort((a,b) => a < b ? -1 : 1);  // id-sorted siblings
+
+  const NODE_W = 162, NODE_H = 54, COL_STRIDE = 200, RANK_STRIDE = 168;
+  const SAT_W = 132, SAT_H = 34;
+  const pos = new Map(); // spine node id -> {x,y}
+  const maxRank = Math.max(...byRank.keys());
+  for (const [r, arr] of byRank) {
+    const total = (arr.length - 1) * COL_STRIDE;
+    arr.forEach((id, i) => pos.set(id, { x: -total/2 + i*COL_STRIDE, y: r * RANK_STRIDE }));
+  }
+  const APEX = { x: 0, y: -RANK_STRIDE };
+  const rootGoals = (byRank.get(0) || []);
+
+  // ---------- state ----------
+  const expanded = new Set();   // owner node ids whose satellites are shown
+  let selected = null;
+  const view = { x: 0, y: 0, k: 1 };
+
+  const SVG = document.getElementById("svg");
+  const VP = document.getElementById("vp");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (n, a) => { const x = document.createElementNS(NS, n); for (const k in (a||{})) x.setAttribute(k, a[k]); return x; };
+
+  function typeColor(e) {
+    if (e.entityType === "node") return { ink: `var(--${e.type})`, bg: `var(--${e.type}-bg)` };
+    return { ink: `var(--${e.entityType})`, bg: `var(--${e.entityType}-bg)` };
+  }
+  function labelOf(e) {
+    if (!e) return "?";
+    return e.title || e.label || e.name || e.id;
+  }
+  function subOf(e) {
+    if (e.entityType === "node") return e.type;
+    if (e.entityType === "noteworthy") return e.kind || "noteworthy";
+    if (e.entityType === "artifact") return e.kind || "artifact";
+    return e.entityType;
+  }
+
+  // word-wrap into <= maxLines tspans
+  function wrap(textEl, str, width, maxLines, lineH, x, y0) {
+    const words = String(str).split(/\s+/);
+    const approx = width / 6.4; // chars per line @ ~11.5px
+    const lines = []; let cur = "";
+    for (const w of words) {
+      if ((cur + " " + w).trim().length > approx && cur) { lines.push(cur); cur = w; }
+      else cur = (cur + " " + w).trim();
+      if (lines.length === maxLines) break;
+    }
+    if (lines.length < maxLines && cur) lines.push(cur);
+    if (lines.length === maxLines) {
+      let last = lines[maxLines-1];
+      const used = lines.join(" ").length;
+      if (used < str.length) lines[maxLines-1] = last.replace(/\s*\S*$/, "") + "…";
+    }
+    lines.forEach((ln, i) => {
+      const t = el("tspan", { x, y: y0 + i*lineH }); t.textContent = ln; textEl.appendChild(t);
+    });
+    return lines.length;
+  }
+
+  // ---------- satellite placement (first expanded owner places it; others tether) ----------
+  function satelliteLayout() {
+    const placed = new Map(); // satId -> {x,y,kind,type}
+    const owners = [...expanded].filter(id => pos.has(id)).sort();
+    for (const ownerId of owners) {
+      const o = pos.get(ownerId);
+      const targets = satByOwner.get(ownerId) || [];
+      const side = o.x <= 0 ? -1 : 1;
+      let slot = 0;
+      const fresh = targets.filter(t => !placed.has(t.id));
+      const n = fresh.length;
+      for (const t of fresh) {
+        const ring = 1 + (slot % 2);                 // two rings to reduce overlap
+        const dx = side * (150 + ring * 54);
+        const dy = (slot - (n - 1) / 2) * (SAT_H + 12);
+        placed.set(t.id, { x: o.x + dx, y: o.y + dy, kind: t.kind, type: t.type });
+        slot++;
+      }
+    }
+    return placed;
+  }
+
+  // ---------- render ----------
+  function neighborhood(id) {
+    const s = new Set([id]);
+    (parents.get(id) || []).forEach(p => s.add(p));
+    (children.get(id) || []).forEach(c => s.add(c));
+    (satByOwner.get(id) || []).forEach(t => s.add(t.id));
+    // if a satellite is selected, light up its owners
+    for (const [owner, arr] of satByOwner) if (arr.some(t => t.id === id)) { s.add(owner); }
+    return s;
+  }
+
+  function render() {
+    VP.innerHTML = "";
+    const placed = satelliteLayout();
+    const hl = selected ? neighborhood(selected) : null;
+    const dimmed = (id) => hl && !hl.has(id);
+
+    const gEdges = el("g"), gTeth = el("g"), gRel = el("g"), gSat = el("g"), gSpine = el("g");
+    VP.append(gEdges, gTeth, gRel, gSat, gSpine);
+
+    // apex connectors
+    for (const gId of rootGoals) {
+      const c = pos.get(gId);
+      gEdges.appendChild(el("path", { class: "apexedge",
+        d: `M ${APEX.x} ${APEX.y + 16} C ${APEX.x} ${(APEX.y+c.y)/2}, ${c.x} ${(APEX.y+c.y)/2}, ${c.x} ${c.y - NODE_H/2}` }));
+    }
+    // decomposes edges
+    for (const e of decomposes) {
+      const a = pos.get(e.from.id), b = pos.get(e.to.id);
+      const p = el("path", { class: "edge",
+        d: `M ${a.x} ${a.y + NODE_H/2} C ${a.x} ${(a.y+b.y)/2}, ${b.x} ${(a.y+b.y)/2}, ${b.x} ${b.y - NODE_H/2}` });
+      if (hl && !(hl.has(e.from.id) && hl.has(e.to.id))) p.classList.add("dim");
+      gEdges.appendChild(p);
+    }
+    // tethers owner -> satellite
+    for (const ownerId of expanded) {
+      const o = pos.get(ownerId); if (!o) continue;
+      for (const t of (satByOwner.get(ownerId) || [])) {
+        const s = placed.get(t.id); if (!s) continue;
+        const p = el("path", { class: "tether " + t.kind,
+          d: `M ${o.x} ${o.y} C ${(o.x+s.x)/2} ${o.y}, ${(o.x+s.x)/2} ${s.y}, ${s.x} ${s.y}` });
+        if (dimmed(ownerId) && dimmed(t.id)) p.classList.add("dim");
+        gTeth.appendChild(p);
+      }
+    }
+    // relates arcs between two shown concepts
+    for (const e of relates) {
+      const a = placed.get(e.from.id), b = placed.get(e.to.id);
+      if (!a || !b) continue;
+      const w = e.weight || 0.5;
+      gRel.appendChild(el("path", { class: "relates",
+        "stroke-width": (0.8 + w*1.8).toFixed(2), opacity: (0.35 + w*0.4).toFixed(2),
+        d: `M ${a.x} ${a.y} Q ${(a.x+b.x)/2} ${(a.y+b.y)/2 - 40} ${b.x} ${b.y}` }));
+    }
+
+    // satellites
+    for (const [id, s] of placed) {
+      const e = ent.get(id); const col = typeColor(e);
+      const g = el("g", { class: "node", transform: `translate(${s.x},${s.y})` });
+      g.dataset.id = id;
+      if (dimmed(id)) g.classList.add("dim");
+      const rx = e.entityType === "concept" ? SAT_H/2 : 6;
+      g.appendChild(el("rect", { class: "pill", x: -SAT_W/2, y: -SAT_H/2, width: SAT_W, height: SAT_H,
+        rx, fill: col.bg, stroke: col.ink }));
+      const tx = el("text", { class: "slabel", "text-anchor": "middle", fill: col.ink, y: 1 });
+      wrap(tx, labelOf(e), SAT_W - 16, 2, 11, 0, -3);
+      g.appendChild(tx);
+      if (id === selected) g.appendChild(el("rect", { class: "sel-ring", x: -SAT_W/2-3, y: -SAT_H/2-3, width: SAT_W+6, height: SAT_H+6, rx: rx+3 }));
+      gSat.appendChild(g);
+    }
+
+    // apex (project)
+    {
+      const g = el("g", { class: "node", transform: `translate(${APEX.x},${APEX.y})` });
+      g.dataset.id = K.project ? K.project.id : "";
+      const w = 150, h = 30;
+      g.appendChild(el("rect", { x: -w/2, y: -h/2, width: w, height: h, rx: 15,
+        fill: "#34322e", stroke: "#34322e" }));
+      const tx = el("text", { class: "nlabel", "text-anchor": "middle", fill: "#fff", y: 4 });
+      tx.textContent = "konspekt"; g.appendChild(tx);
+      gSpine.appendChild(g);
+    }
+    // spine nodes
+    for (const id of nodeIds) {
+      const e = ent.get(id), p = pos.get(id), col = typeColor(e);
+      const g = el("g", { class: "node", transform: `translate(${p.x},${p.y})` });
+      g.dataset.id = id;
+      if (dimmed(id)) g.classList.add("dim");
+      g.appendChild(el("rect", { x: -NODE_W/2, y: -NODE_H/2, width: NODE_W, height: NODE_H, rx: 9,
+        fill: "var(--panel)", stroke: col.ink }));
+      const tag = el("text", { class: "ntype", x: -NODE_W/2 + 11, y: -NODE_H/2 + 15, fill: col.ink });
+      tag.textContent = e.type; g.appendChild(tag);
+      const hasSat = (satByOwner.get(id) || []).length > 0;
+      if (hasSat) {
+        const badge = el("text", { class: "ntype", x: NODE_W/2 - 12, y: -NODE_H/2 + 15, fill: "var(--faint)", "text-anchor": "end" });
+        badge.textContent = expanded.has(id) ? "–" : "+" + (satByOwner.get(id).length);
+        g.appendChild(badge);
+      }
+      const tx = el("text", { class: "nlabel", "text-anchor": "middle", fill: "var(--ink)", x: 0 });
+      wrap(tx, labelOf(e), NODE_W - 18, 2, 12.5, 0, 4);
+      g.appendChild(tx);
+      if (id === selected) g.appendChild(el("rect", { class: "sel-ring", x: -NODE_W/2-3, y: -NODE_H/2-3, width: NODE_W+6, height: NODE_H+6, rx: 12 }));
+      gSpine.appendChild(g);
+    }
+    applyTransform();
+  }
+
+  function applyTransform() { VP.setAttribute("transform", `translate(${view.x},${view.y}) scale(${view.k})`); }
+
+  // ---------- fit ----------
+  function bounds() {
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    const acc=(x,y,w,h)=>{minX=Math.min(minX,x-w/2);maxX=Math.max(maxX,x+w/2);minY=Math.min(minY,y-h/2);maxY=Math.max(maxY,y+h/2);};
+    for (const p of pos.values()) acc(p.x,p.y,NODE_W,NODE_H);
+    acc(APEX.x,APEX.y,150,30);
+    const placed = satelliteLayout();
+    for (const s of placed.values()) acc(s.x,s.y,SAT_W,SAT_H);
+    return {minX,minY,maxX,maxY};
+  }
+  function fit() {
+    const b = bounds(), pad = 60;
+    const w = SVG.clientWidth, h = SVG.clientHeight;
+    const gw = (b.maxX-b.minX)+pad*2, gh = (b.maxY-b.minY)+pad*2;
+    view.k = Math.min(w/gw, h/gh, 1.4);
+    view.x = w/2 - ((b.minX+b.maxX)/2)*view.k;
+    view.y = h/2 - ((b.minY+b.maxY)/2)*view.k;
+    applyTransform();
+  }
+  function centerOn(x, y, k) {
+    view.k = k || view.k;
+    view.x = SVG.clientWidth/2 - x*view.k;
+    view.y = SVG.clientHeight/2 - y*view.k;
+    applyTransform();
+  }
+
+  // ---------- interaction ----------
+  let drag = null;
+  SVG.addEventListener("pointerdown", (ev) => {
+    drag = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y, moved: false };
+    SVG.classList.add("grabbing"); SVG.setPointerCapture(ev.pointerId);
+  });
+  SVG.addEventListener("pointermove", (ev) => {
+    if (!drag) return;
+    const dx = ev.clientX-drag.x, dy = ev.clientY-drag.y;
+    if (Math.abs(dx)+Math.abs(dy) > 3) drag.moved = true;
+    view.x = drag.vx+dx; view.y = drag.vy+dy; applyTransform();
+  });
+  SVG.addEventListener("pointerup", (ev) => {
+    SVG.classList.remove("grabbing");
+    if (drag && !drag.moved) {
+      const g = ev.target.closest(".node");
+      if (g && g.dataset.id) onNodeClick(g.dataset.id);
+      else { selected = null; renderDetail(); render(); }
+    }
+    drag = null;
+  });
+  SVG.addEventListener("wheel", (ev) => {
+    ev.preventDefault();
+    const rect = SVG.getBoundingClientRect();
+    const mx = ev.clientX-rect.left, my = ev.clientY-rect.top;
+    const f = Math.exp(-ev.deltaY * 0.0015);
+    const nk = Math.max(0.25, Math.min(3, view.k * f));
+    const wx = (mx-view.x)/view.k, wy = (my-view.y)/view.k;
+    view.k = nk; view.x = mx-wx*nk; view.y = my-wy*nk; applyTransform();
+  }, { passive: false });
+
+  function onNodeClick(id) {
+    selected = id;
+    if (nodeIds.has(id) && (satByOwner.get(id) || []).length) {
+      if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+    }
+    renderDetail(); render();
+  }
+
+  // ---------- detail panel ----------
+  function inlineMd(s) {
+    return s.replace(/[&<>]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c]))
+            .replace(/`([^`]+)`/g, "<code>$1</code>")
+            .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+            .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+  }
+  function bodyHtml(e) {
+    let b = (e.body || "").replace(/^#.*\n+/, ""); // drop leading H1 (title shown above)
+    return b.split(/\n\s*\n/).map(p => "<p>" + inlineMd(p.replace(/\n/g," ")) + "</p>").join("");
+  }
+  function edgesFor(id) {
+    const out = edges.filter(e => e.from.id === id);
+    const inb = edges.filter(e => e.to.id === id);
+    return { out, inb };
+  }
+  function renderDetail() {
+    const pane = document.getElementById("detailPane");
+    if (!selected || !ent.has(selected)) { pane.innerHTML = "<div class='empty'>Select a node to inspect it.</div>"; return; }
+    const e = ent.get(selected), col = typeColor(e);
+    const chips = [];
+    chips.push(`<span class="chip k" style="background:${col.ink}">${e.entityType}${e.entityType==="node"?" · "+e.type:""}</span>`);
+    if (e.status) chips.push(`<span class="chip">status: ${e.status}</span>`);
+    if (e.kind && e.entityType!=="node") chips.push(`<span class="chip">${e.kind}</span>`);
+    if (e.review) chips.push(`<span class="chip">review: ${e.review}</span>`);
+    if (e.version) chips.push(`<span class="chip">${e.version}</span>`);
+    if (Array.isArray(e.aliases) && e.aliases.length) chips.push(`<span class="chip">aka: ${e.aliases.join(", ")}</span>`);
+
+    const prov = e.provenance || {};
+    const provBits = [];
+    if (prov.conversationId) provBits.push(`conversation <b>${prov.conversationId}</b>`);
+    if (prov.confidence != null) provBits.push(`confidence <b>${prov.confidence}</b>`);
+    if (e.location) provBits.push(`@ <b>${e.location}</b>`);
+
+    const { out, inb } = edgesFor(selected);
+    const erow = (e2, dir) => {
+      const other = dir==="out" ? e2.to.id : e2.from.id;
+      const oe = ent.get(other);
+      return `<div class="erow"><span class="ek">${e2.kind}</span>` +
+        `<a data-go="${other}">${dir==="out"?"→":"←"} ${oe ? labelOf(oe) : other}</a></div>`;
+    };
+
+    pane.innerHTML =
+      `<div class="d-kicker">${e.id}</div>` +
+      `<div class="d-title">${labelOf(e)}</div>` +
+      `<div class="chips">${chips.join("")}</div>` +
+      `<div class="d-body">${bodyHtml(e)}</div>` +
+      (provBits.length ? `<div class="d-sec"><h4>Provenance</h4><div class="meta-kv">${provBits.join(" · ")}</div></div>` : "") +
+      (out.length ? `<div class="d-sec"><h4>Outbound (${out.length})</h4>${out.map(x=>erow(x,"out")).join("")}</div>` : "") +
+      (inb.length ? `<div class="d-sec"><h4>Inbound (${inb.length})</h4>${inb.map(x=>erow(x,"in")).join("")}</div>` : "");
+
+    pane.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", () => goTo(a.dataset.go)));
+  }
+
+  function goTo(id) {
+    if (!ent.has(id)) return;
+    selected = id;
+    // ensure visible: if it's a satellite, expand an owner that references it
+    if (!nodeIds.has(id) && !satelliteLayout().has(id)) {
+      for (const [owner, arr] of satByOwner) if (arr.some(t => t.id === id)) { expanded.add(owner); break; }
+    }
+    renderDetail(); render();
+    const placed = satelliteLayout();
+    const p = pos.get(id) || placed.get(id);
+    if (p) centerOn(p.x, p.y, Math.max(view.k, 0.9));
+  }
+
+  // ---------- problems panel ----------
+  function renderProblems() {
+    const pane = document.getElementById("problemsPane");
+    const probs = K.problems || [];
+    document.getElementById("probCount").textContent = probs.length;
+    if (probs.some(p => p.severity === "error")) document.getElementById("probCount").classList.add("err");
+    if (!probs.length) { pane.innerHTML = "<div class='empty'>No conformance problems. ✓</div>"; return; }
+    pane.innerHTML = probs.map(p =>
+      `<div class="prob ${p.severity}"><div class="code">${p.code}</div>` +
+      `<div class="msg">${inlineMd(p.message)}</div>` +
+      (p.ref && ent.has(p.ref) ? `<div class="msg"><span class="ref" data-go="${p.ref}">→ ${p.ref}</span></div>` : "") +
+      `</div>`).join("");
+    pane.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", () => {
+      switchTab("detail"); goTo(a.dataset.go);
+    }));
+  }
+
+  // ---------- tabs ----------
+  function switchTab(name) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab===name));
+    document.getElementById("detailPane").style.display = name==="detail" ? "" : "none";
+    document.getElementById("problemsPane").style.display = name==="problems" ? "" : "none";
+  }
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+
+  // ---------- controls ----------
+  document.getElementById("btnFit").addEventListener("click", fit);
+  document.getElementById("btnCollapse").addEventListener("click", () => { expanded.clear(); render(); });
+  document.getElementById("btnExpand").addEventListener("click", () => {
+    for (const id of satByOwner.keys()) expanded.add(id); render(); fit();
+  });
+  const search = document.getElementById("search");
+  search.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Enter") return;
+    const q = search.value.trim().toLowerCase(); if (!q) return;
+    let hit = null;
+    for (const e of ent.values()) {
+      if (e.id === K.project?.id) continue;
+      const hay = (e.id + " " + labelOf(e) + " " + (e.aliases||[]).join(" ")).toLowerCase();
+      if (hay.includes(q)) { hit = e.id; break; }
+    }
+    if (hit) goTo(hit);
+  });
+
+  // ---------- legend ----------
+  document.getElementById("legend").innerHTML =
+    [["goal","Goal"],["investigation","Investigation"],["task","Task"],
+     ["concept","Concept"],["noteworthy","Noteworthy"],["artifact","Artifact"]]
+    .map(([c,l]) => `<div class="row"><span class="sw" style="background:var(--${c}-bg);border-color:var(--${c})"></span>${l}</div>`).join("");
+
+  // ---------- boot ----------
+  document.getElementById("projectGoal").textContent = K.project ? K.project.goal : "";
+  renderProblems();
+  render();
+  fit();
+  window.addEventListener("resize", () => applyTransform());
+})();
+</script>
+</body>
+</html>
