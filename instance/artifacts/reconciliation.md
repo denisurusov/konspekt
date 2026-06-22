@@ -2,13 +2,13 @@
 id: artifact-reconciliation
 name: Reconciliation spec
 kind: doc
-location: spec/RECONCILIATION.md
+location: spec/architecture/RECONCILIATION.md
 review: accepted
 provenance:
   conversationId: maintain-populate-instances
   timestamp: 2026-06-21T16:00:00Z
 createdAt: 2026-06-21T16:00:00Z
-updatedAt: 2026-06-21T16:00:00Z
+updatedAt: 2026-06-22T15:00:00Z
 ```
 # Artifact: Reconciliation spec
 

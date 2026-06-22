@@ -19,8 +19,8 @@ The two converge on one thing: a durable, structured, human-readable representat
 
 ## Layout
 
-- `spec/` — the standard: the data model (`SPEC.md`), the schema (`schema.ts`), and the **v1** serialization format (`SERIALIZATION.md`).
-- `reference/` — the reference implementation (to come).
+- `spec/` — the standard, split into `data-model/` (the portable vocabulary: `SPEC.md`, `schema.ts`) and `architecture/` (how state is kept true and carried: `RECONCILIATION.md`, the **v1** `SERIALIZATION.md`, and the transport contract to come).
+- `reference/` — the reference implementation (to come). Also the home for **triggers** — *when* a maintenance pass fires — which are host policy, not part of the standard.
 - `instance/` — konspekt eating its own dog food: the live state of building konspekt, in konspekt's own format. The first guinea pig.
 
 ## Status
