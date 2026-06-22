@@ -44,7 +44,11 @@ Rules:
 
 ## Sources
 
-`sources/<contentHash>.md` holds the **source excerpts** an entity's provenance points at — the addressable text an extraction was drawn from, written push-based at extraction time. These are *not* graph entities: plain Markdown, no front-matter, no `id`. The filename **is** the excerpt's git blob SHA, so `provenance.sourceRef` resolves to `sources/<sourceRef>.md`, and the verify probe is `git hash-object` of that file equalling the stored `contentHash` (`RECONCILIATION.md`). The directory is **append-only**: editing an excerpt yields a new hash and a new file, never an in-place rewrite. Entities predating the mechanism may carry provenance without `sourceRef` / `contentHash`; their backfill is a separate, human-assisted pass.
+`sources/<contentHash>.md` holds the **source excerpts** an entity's provenance points at — the addressable text an extraction was drawn from, written push-based at extraction time. These are *not* graph entities: plain Markdown, no front-matter, no `id`. The filename **is** the excerpt's git blob SHA, so `provenance.sourceRef` resolves to `sources/<sourceRef>.md`, and the verify probe is `git hash-object` of that file equalling the stored `contentHash` (`RECONCILIATION.md`). The directory is **append-only**: editing an excerpt yields a new hash and a new file, never an in-place rewrite.
+
+**An excerpt is verbatim, and covers every participating turn.** Capture the source text as it was written — human prompts *and* assistant responses — copied, never paraphrased. Curation is permitted only as **selection**: choosing which spans to include and eliding the rest (e.g. with `...`). Rewriting a span — summarizing, condensing, "synthesizing" — is **prohibited**, because it reintroduces interpretation at the one layer whose job is to be the *near-deterministic* anchor: copied text reproduces byte-for-byte and so hashes stably, while a paraphrase does not. A summarized excerpt is an **atom in disguise** — it cannot serve as the stable source the atoms above it are reconciled against, and it silently breaks the guarantee that the stored text *is* what the extraction was drawn from. The specific failure to guard against is **asymmetry**: capturing the human verbatim while compressing the assistant. Both sides are source.
+
+Entities predating the mechanism may carry provenance without `sourceRef` / `contentHash`; their backfill is a separate, human-assisted pass.
 
 ## Versioning
 

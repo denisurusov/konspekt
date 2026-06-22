@@ -16,6 +16,13 @@ Convention:
 - **Verify probe:** `git hash-object instance/sources/<sourceRef>.md` must equal
   the stored `contentHash`. A mismatch means the excerpt was edited after
   construction.
+- **Verbatim, both sides.** An excerpt copies the source text from every
+  participating turn — human prompts *and* assistant responses — selected (which
+  spans to keep, eliding the rest) but **never paraphrased**. Rewriting a span
+  reintroduces the non-determinism content-addressing exists to remove, turning
+  the excerpt into an atom in disguise that no longer hashes to the real source.
+  The asymmetry to avoid: capturing the human verbatim while summarizing the
+  assistant. Both sides are source. (See `spec/architecture/SERIALIZATION.md`.)
 - Excerpts are **append-only and content-addressed**: editing text yields a new
   hash, hence a new file, never a mutation of an existing one.
 
