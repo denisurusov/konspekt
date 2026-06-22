@@ -51,6 +51,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
 | e-prod-serial-serialization | produces | node:task-serialization-format | artifact:artifact-serialization | |
 | e-prod-ingestion-spec | produces | node:task-ingestion-mode | artifact:artifact-spec | |
+| e-prod-reconciliation-doc | produces | node:task-reconciliation | artifact:artifact-reconciliation | |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
 | e-mark-curated | marks | waypoint:wp-curated-goal | node:goal-curated-context | |
