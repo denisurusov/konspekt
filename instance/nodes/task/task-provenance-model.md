@@ -6,13 +6,15 @@ status: resolved
 summary:
   origin: machine
   pinned: false
-  updatedAt: 2026-06-22T18:00:00Z
+  updatedAt: 2026-06-22T18:30:00Z
 review: accepted
 provenance:
-  conversationId: provenance-as-chat-text
+  sourceRef: 8422d16ea0723131e8877d2fd4708017f74dd17a
+  contentHash: 8422d16ea0723131e8877d2fd4708017f74dd17a
   timestamp: 2026-06-22T18:00:00Z
+  conversationId: provenance-as-chat-text
 createdAt: 2026-06-22T18:00:00Z
-updatedAt: 2026-06-22T18:00:00Z
+updatedAt: 2026-06-22T18:30:00Z
 ```
 # Task: Provenance model — content-addressed source (resolved)
 
@@ -28,6 +30,9 @@ timestamp-ordered optimization and retiring the edited-message special case.
 Specced across `spec/data-model/schema.ts`, `spec/data-model/SPEC.md`, and
 `spec/architecture/RECONCILIATION.md`.
 
-Spawned open sub-decision: *where source excerpt blobs live* (an
-`instance/sources/` convention) and the **backfill** of every existing entity,
-none of which yet carries a `sourceRef` — the work a re-hydration pass closes.
+Mechanism started: source excerpts live at `instance/sources/<contentHash>.md`
+(git blob SHA = contentHash), documented in `instance/sources/README.md`. This
+session's entities are the first stamped under it and verify against
+`instance/sources/8422d16ea0723131e8877d2fd4708017f74dd17a.md`. Remaining:
+human-assisted backfill of entities predating the mechanism, which still carry
+only `conversationId` + `timestamp`.
