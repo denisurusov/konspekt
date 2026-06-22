@@ -34,11 +34,16 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue | |
 | e-men-port-conv | mentions | node:goal-portability | concept:concept-goals-convergence | |
 | e-men-port-legible | mentions | node:goal-portability | concept:concept-legible-over-defensible | |
+| e-men-port-contract | mentions | node:goal-portability | concept:concept-transport-contract | |
 | e-men-curated-conv | mentions | node:goal-curated-context | concept:concept-goals-convergence | |
 | e-men-valid-need | mentions | node:investigation-validation | concept:concept-need-not-mechanic | |
 | e-men-valid-gap | mentions | node:investigation-validation | concept:concept-second-implementer-gap | |
 | e-men-comp-legible | mentions | node:investigation-competition | concept:concept-legible-over-defensible | |
 | e-men-second-gap | mentions | node:task-second-implementer | concept:concept-second-implementer-gap | |
+| e-men-trigger-contract | mentions | node:task-trigger-transport | concept:concept-transport-contract | |
+| e-men-review-sep | mentions | node:task-review-ergonomics | concept:concept-propose-accept-separation | |
+| e-men-ingestion-sep | mentions | node:task-ingestion-mode | concept:concept-propose-accept-separation | |
+| e-men-reconcile-sep | mentions | node:task-reconciliation | concept:concept-propose-accept-separation | |
 | e-not-valid-hyp | notes | node:investigation-validation | noteworthy:nw-hypotheses-not-proof | |
 | e-not-valid-vocab | notes | node:investigation-validation | noteworthy:nw-validation-is-vocabulary | |
 | e-not-valid-curated | notes | node:investigation-validation | noteworthy:nw-curated-context-accuracy | |
@@ -48,6 +53,9 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-comp-absorb | notes | node:investigation-competition | noteworthy:nw-platforms-absorb | |
 | e-not-repo-seam | notes | node:investigation-repo-structure | noteworthy:nw-spec-seam | |
 | e-not-oploop-seam | notes | node:investigation-operating-loop | noteworthy:nw-spec-seam | |
+| e-not-trigger-probe | notes | node:task-trigger-transport | noteworthy:nw-manual-reupload-probe | |
+| e-not-review-noblock | notes | node:task-review-ergonomics | noteworthy:nw-review-doesnt-block-persist | |
+| e-not-review-triage | notes | node:task-review-ergonomics | noteworthy:nw-confidence-triages-not-accepts | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -67,3 +75,4 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |
+| e-rel-contract-legible | relates | concept:concept-transport-contract | concept:concept-legible-over-defensible | 0.5 |
