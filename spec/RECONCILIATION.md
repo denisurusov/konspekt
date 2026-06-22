@@ -2,10 +2,9 @@
 
 How a fresh extraction is merged into an existing instance without duplication
 or clobbering. Each extracted atom is classified against the current graph as
-**new | duplicate | update | conflict**. This document covers the first step —
-resolving an atom to an existing entity — and the idempotence guarantee that
-makes a pass safe to re-run. Status-transition and supersession rules follow as
-the thread develops.
+**new | duplicate | update | conflict**. This document covers resolving an atom
+to an existing entity, the idempotence guarantee that makes a pass safe to
+re-run, and how the *update* and *conflict* buckets are handled.
 
 ## Resolution ladder (deterministic tier)
 
@@ -103,6 +102,45 @@ Consequence: once re-runs are no-ops, the pass is safe to trigger **any way** �
 end-of-session, scheduled, manual, post-crash — instead of requiring fragile
 exactly-once delivery. This is what frees the trigger + transport stream.
 
-> Schema dependency: requires `provenance.messageId` and a
-> `provenance.contentHash` (hash of the source message content). Add both to
+> Provenance support: idempotence relies on `provenance.messageId` (the
+> watermark key) and `provenance.contentHash` (edit detection), both defined on
 > `Provenance` in `schema.ts`.
+
+## Status transitions and supersession
+
+After the ladder matches an atom to an existing entity, two cases remain where
+the atom is **not** a duplicate. One test separates them: **is a second entity
+involved?**
+
+**No second entity → status transition (the *update* bucket).** New prose
+changes the *state* of one existing entity: an assumption
+`unvalidated → validated`, a node `open → resolved`, a constraint
+`active → lifted`. Handle it by flipping that entity's own `status` field —
+*never* by adding an edge. A transition has only one endpoint, so an edge would
+need a phantom "event" node; and the derived views (`open assumptions`, …) read
+`status`, so the field must move regardless. An edge alongside it would be a
+second source of truth for one fact. The *evidence* (which message bears the
+transition) is recorded as **provenance** on the change. The human path is the
+authority verbs (`validate`, `resolve`, `lift`, …); the maintainer may *propose*
+a transition, which review confirms.
+
+**A second entity → supersession (the *conflict* bucket).** New prose
+contradicts or replaces an existing entity (a later decision overturns an
+earlier one). This relates *two* entities, so it is a single `supersedes`
+**edge** — `from` the superseding (new) entity, `to` the superseded (old) one.
+Both entities stay in the graph; the edge records that one replaced the other.
+Neither is deleted, so the reversal itself stays legible.
+
+One edge kind suffices, not two. An unresolved contradiction versus a confirmed
+replacement is the *same* edge in two **review** states: a **proposed**
+`supersedes` edge is a flagged contradiction awaiting the human; **accepting**
+it confirms the replacement. The `review` field already carries this — no
+`negates` kind needed. Evidential relations ("supports") are deliberately not
+typed: nothing transitions, so they stay out of this family.
+
+Both cases mutate or annotate **accepted** state, so they pass through review
+like any proposal and must carry provenance, or the watermark will re-propose
+them on the next pass.
+
+Derived view: **current items** = entities with no inbound `supersedes` edge
+(the live decision among superseded ones).

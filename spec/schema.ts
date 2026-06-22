@@ -51,7 +51,9 @@ export type EdgeKind =
   | "relates"    // concept -> concept (untyped; optional weight)
   | "produces"   // node -> artifact
   | "notes"      // node -> noteworthy
-  | "marks";     // waypoint -> node (the branch it sits on / opened)
+  | "marks"      // waypoint -> node (the branch it sits on / opened)
+  | "supersedes";// entity -> entity (new replaces old; superseded = the `to`).
+                 // proposed = flagged contradiction; accepted = confirmed.
 
 // ---------- Cross-cutting ----------
 
@@ -153,6 +155,8 @@ export interface Edge extends Base {
 //     = waypoints ordered by timestamp
 //   open assumptions
 //     = noteworthy where kind="assumption" and status="unvalidated"
+//   current items
+//     = entities with no inbound edge(kind="supersedes")
 
 export interface Konspekt {
   project: Project;

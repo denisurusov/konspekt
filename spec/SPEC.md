@@ -38,6 +38,7 @@ One typed table; `from` / `to` are `EntityRef`s; `weight` is meaningful only for
 - `produces` — node → artifact
 - `notes` — node → noteworthy
 - `marks` — waypoint → node (the branch the waypoint sits on / opened)
+- `supersedes` — entity → entity (a new entity replaces an old one; the superseded entity is the `to`). A **proposed** edge is a flagged contradiction awaiting review; **accepting** it confirms the replacement. Both entities stay in the graph — append over rewrite — so the reversal stays legible.
 
 ## Derived views (never stored)
 
@@ -46,6 +47,7 @@ One typed table; `from` / `to` are `EntityRef`s; `weight` is meaningful only for
 - goal tree = `edges where kind = "decomposes"`
 - timeline = waypoints ordered by `timestamp`
 - open assumptions = noteworthy where `kind = "assumption"` and `status = "unvalidated"`
+- current items = entities with no inbound `supersedes` edge (e.g. the live decision among superseded ones)
 
 ## Human vocabulary (v1)
 
@@ -72,4 +74,4 @@ These are **authority verbs** — the override/guarantee moments, and precisely 
 
 ## Note on concept relationships
 
-Concept-to-concept edges exist but are **untyped** (kind `relates`), carrying an optional numeric `weight` instead of a relationship ontology — deliberately avoiding a philosophical rabbit hole.
+Concept-to-concept edges exist but are **untyped** (kind `relates`), carrying an optional numeric `weight` instead of a relationship ontology — deliberately avoiding a philosophical rabbit hole. `supersedes` is the one *truth-changing* relation promoted to its own kind; evidential relations ("supports") are deliberately **not** typed, for the same reason.
