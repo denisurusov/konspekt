@@ -46,6 +46,8 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-outcomes-assump | notes | node:task-outcomes-node-type | noteworthy:nw-curated-context-accuracy | |
 | e-not-comp-copy | notes | node:investigation-competition | noteworthy:nw-copying-is-the-win | |
 | e-not-comp-absorb | notes | node:investigation-competition | noteworthy:nw-platforms-absorb | |
+| e-not-repo-seam | notes | node:investigation-repo-structure | noteworthy:nw-spec-seam | |
+| e-not-oploop-seam | notes | node:investigation-operating-loop | noteworthy:nw-spec-seam | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -60,6 +62,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-mark-open | marks | waypoint:wp-openness | node:investigation-competition | |
 | e-mark-naming | marks | waypoint:wp-naming | node:investigation-naming | |
 | e-mark-repo | marks | waypoint:wp-repo-structure | node:investigation-repo-structure | |
+| e-mark-spec-split | marks | waypoint:wp-spec-split | node:investigation-repo-structure | |
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |
