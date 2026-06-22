@@ -5,18 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>konspekt · context explorer</title>
 <!--
-  konspekt visual — static context explorer (v0, read-only)
+  konspekt visual — context explorer (v1, read-only)
 
   Loads data/snapshot.js (a pure function of the instance/ tree) and renders
-  the decomposes DAG: goals at the top, tasks at the bottom. Click a spine
-  node to expand its satellites (concepts via `mentions`, noteworthy via
-  `notes`, artifacts via `produces`). Click anything for detail. The problems
-  panel surfaces the conformance check baked by the build.
+  the decomposes DAG with Cytoscape.js: goals at the top, tasks at the bottom.
+  It starts collapsed to the root goals; click a node to expand it — revealing
+  its decomposes children and its satellites (concepts via `mentions`,
+  noteworthy via `notes`, artifacts via `produces`) — and the dagre layout
+  reflows to make room. Click again to collapse. Click anything for detail.
+  The problems panel surfaces the conformance check baked by the build.
 
-  No server, no build step to view: open this file directly. No writes.
-  Time, status, and review are intentionally NOT encoded as visual channels
-  in v0 — every node shows regardless of status. They become filters later.
+  Rendering, pan/zoom, fit, hit-testing and the layered layout are all owned by
+  Cytoscape.js + cytoscape-dagre (vendored under ./vendor, no CDN, no build).
+  Modern browsers block <script src> over file://, so view it through a local
+  static server (any will do):
+      node build/serve.mjs        # then open http://localhost:8777/
+  No writes. Time / status / review are not yet encoded as visual channels.
 -->
+<!--suppress CssUnusedSymbol, CssNonIntegerLengthInPixels -->
 <style>
   :root {
     --bg: #fbfaf8;
@@ -74,23 +80,7 @@
   #search:focus { outline: 2px solid var(--goal-bg); border-color: var(--goal); }
   #stage { position: relative; overflow: hidden; background:
     radial-gradient(circle at 1px 1px, #ece9e3 1px, transparent 0) 0 0 / 26px 26px var(--bg); }
-  svg { width: 100%; height: 100%; display: block; cursor: grab; }
-  svg.grabbing { cursor: grabbing; }
-  .node { cursor: pointer; }
-  .node rect, .node .pill { stroke-width: 1.4; }
-  .node text { pointer-events: none; }
-  .ntype { font-size: 9px; letter-spacing: .6px; text-transform: uppercase; }
-  .nlabel { font-size: 11.5px; font-weight: 550; }
-  .slabel { font-size: 10.5px; font-weight: 500; }
-  .edge { fill: none; stroke: var(--edge); stroke-width: 1.4; }
-  .apexedge { fill: none; stroke: var(--line-strong); stroke-width: 1.3; stroke-dasharray: 3 4; }
-  .tether { fill: none; stroke-width: 1.2; opacity: .5; }
-  .tether.mentions { stroke: var(--concept); }
-  .tether.notes { stroke: var(--noteworthy); }
-  .tether.produces { stroke: var(--artifact); }
-  .relates { fill: none; stroke: #9b8cc0; stroke-dasharray: 2 5; }
-  .dim { opacity: .22; }
-  .sel-ring { fill: none; stroke: var(--sel); stroke-width: 2.4; }
+  #cy { position: absolute; inset: 0; }
   /* right panel */
   aside { grid-row: 2; grid-column: 2; border-left: 1px solid var(--line); background: var(--panel);
     display: flex; flex-direction: column; min-height: 0; }
@@ -142,14 +132,14 @@
     <div class="brand">konspekt <span>· context explorer</span></div>
     <div class="goal" id="projectGoal"></div>
     <div class="spacer"></div>
-    <input id="search" placeholder="search id / label…" autocomplete="off" />
+    <input id="search" placeholder="search id / label…" aria-label="search nodes by id or label" autocomplete="off" />
     <button class="ctrl" id="btnExpand">Expand all</button>
     <button class="ctrl" id="btnCollapse">Collapse</button>
     <button class="ctrl" id="btnFit">Fit</button>
   </header>
 
   <div id="stage">
-    <svg id="svg"><g id="vp"></g></svg>
+    <div id="cy"></div>
     <div class="legend" id="legend"></div>
     <div class="hint">scroll to zoom · drag to pan · click a node to expand</div>
   </div>
@@ -164,12 +154,30 @@
   </aside>
 </div>
 
+<script src="./vendor/cytoscape.min.js"></script>
+<script src="./vendor/dagre.min.js"></script>
+<script src="./vendor/cytoscape-dagre.js"></script>
 <script src="./data/snapshot.js"></script>
 <script>
 (function () {
   "use strict";
+  const fail = (m) => { document.body.innerHTML = "<p style='padding:20px'>" + m + "</p>"; };
   const K = window.__KONSPEKT__;
-  if (!K) { document.body.innerHTML = "<p style='padding:20px'>data/snapshot.js failed to load. Run <code>node build/snapshot.mjs</code>.</p>"; return; }
+  if (!K) return fail("data/snapshot.js failed to load. Run <code>node build/snapshot.mjs</code> and serve over http (see build/serve.mjs).");
+  if (!window.cytoscape) return fail("vendor/cytoscape.min.js failed to load. Serve this folder over http (file:// blocks scripts).");
+  if (window.cytoscapeDagre) cytoscape.use(window.cytoscapeDagre);
+
+  // ---------- concrete palette (Cytoscape renders to canvas; CSS vars don't apply there) ----------
+  const C = {
+    goal:          { ink: "#4f46e5", bg: "#eef0ff" },
+    investigation: { ink: "#0f766e", bg: "#e6f4f1" },
+    task:          { ink: "#b45309", bg: "#fbf0e2" },
+    concept:       { ink: "#7c3aed", bg: "#f3edfd" },
+    noteworthy:    { ink: "#be123c", bg: "#fdecef" },
+    artifact:      { ink: "#1d4ed8", bg: "#e8effc" },
+    apex:          { ink: "#34322e", bg: "#34322e" },
+    edge: "#c4c0b8", apexedge: "#cfccc5", relates: "#9b8cc0", sel: "#b4530a",
+  };
 
   // ---------- index everything by id ----------
   const ent = new Map();
@@ -181,20 +189,21 @@
   const edges = K.edges || [];
   const decomposes = edges.filter(e => e.kind === "decomposes" && nodeIds.has(e.from.id) && nodeIds.has(e.to.id));
 
-  // satellite edges: node -> {concept|noteworthy|artifact}
   const SAT_KIND = { mentions: "concept", notes: "noteworthy", produces: "artifact" };
-  const satByOwner = new Map(); // ownerNodeId -> [{id, kind, type}]
+  const satByOwner = new Map();           // ownerNodeId -> [{id, kind, type}]
+  const satIds = new Set();
   for (const e of edges) {
     if (!SAT_KIND[e.kind]) continue;
     if (!nodeIds.has(e.from.id)) continue;
     const t = ent.get(e.to.id); if (!t) continue;
     if (!satByOwner.has(e.from.id)) satByOwner.set(e.from.id, []);
     satByOwner.get(e.from.id).push({ id: e.to.id, kind: e.kind, type: SAT_KIND[e.kind] });
+    satIds.add(e.to.id);
   }
   for (const arr of satByOwner.values()) arr.sort((a,b) => a.id < b.id ? -1 : 1);
-  const relates = edges.filter(e => e.kind === "relates");
+  const relates = edges.filter(e => e.kind === "relates" && satIds.has(e.from.id) && satIds.has(e.to.id));
 
-  // ---------- deterministic longest-path layout ----------
+  // ---------- decomposes structure: parents/children + longest-path rank (for visibility) ----------
   const parents = new Map(), children = new Map();
   for (const id of nodeIds) { parents.set(id, []); children.set(id, []); }
   for (const e of decomposes) { children.get(e.from.id).push(e.to.id); parents.get(e.to.id).push(e.from.id); }
@@ -202,269 +211,169 @@
   function rank(id, stack) {
     if (rankMemo.has(id)) return rankMemo.get(id);
     stack = stack || new Set();
-    if (stack.has(id)) return 0;           // cycle guard (shouldn't happen in a DAG)
+    if (stack.has(id)) return 0;
     stack.add(id);
     const ps = parents.get(id) || [];
     const r = ps.length ? 1 + Math.max(...ps.map(p => rank(p, stack))) : 0;
     stack.delete(id); rankMemo.set(id, r); return r;
   }
-  const byRank = new Map();
-  for (const id of nodeIds) { const r = rank(id); if (!byRank.has(r)) byRank.set(r, []); byRank.get(r).push(id); }
-  for (const arr of byRank.values()) arr.sort((a,b) => a < b ? -1 : 1);  // id-sorted siblings
+  const rootGoals = [...nodeIds].filter(id => (parents.get(id) || []).length === 0).sort();
 
-  const NODE_W = 162, NODE_H = 54, COL_STRIDE = 200, RANK_STRIDE = 168;
-  const SAT_W = 132, SAT_H = 34;
-  const pos = new Map(); // spine node id -> {x,y}
-  const maxRank = Math.max(...byRank.keys());
-  for (const [r, arr] of byRank) {
-    const total = (arr.length - 1) * COL_STRIDE;
-    arr.forEach((id, i) => pos.set(id, { x: -total/2 + i*COL_STRIDE, y: r * RANK_STRIDE }));
-  }
-  const APEX = { x: 0, y: -RANK_STRIDE };
-  const rootGoals = (byRank.get(0) || []);
-
-  // ---------- state ----------
-  const expanded = new Set();   // owner node ids whose satellites are shown
-  let selected = null;
-  const view = { x: 0, y: 0, k: 1 };
-
-  const SVG = document.getElementById("svg");
-  const VP = document.getElementById("vp");
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (n, a) => { const x = document.createElementNS(NS, n); for (const k in (a||{})) x.setAttribute(k, a[k]); return x; };
-
+  // ---------- helpers shared with the detail panel ----------
+  function labelOf(e) { return e ? (e.title || e.label || e.name || e.id) : "?"; }
   function typeColor(e) {
-    if (e.entityType === "node") return { ink: `var(--${e.type})`, bg: `var(--${e.type}-bg)` };
-    return { ink: `var(--${e.entityType})`, bg: `var(--${e.entityType}-bg)` };
+    if (!e) return C.apex;
+    const key = e.entityType === "node" ? e.type : e.entityType;
+    return C[key] || C.apex;
   }
-  function labelOf(e) {
-    if (!e) return "?";
-    return e.title || e.label || e.name || e.id;
-  }
-  function subOf(e) {
-    if (e.entityType === "node") return e.type;
-    if (e.entityType === "noteworthy") return e.kind || "noteworthy";
-    if (e.entityType === "artifact") return e.kind || "artifact";
-    return e.entityType;
+  function hasMore(id) {
+    return (children.get(id) || []).length > 0 || (satByOwner.get(id) || []).length > 0;
   }
 
-  // word-wrap into <= maxLines tspans
-  function wrap(textEl, str, width, maxLines, lineH, x, y0) {
-    const words = String(str).split(/\s+/);
-    const approx = width / 6.4; // chars per line @ ~11.5px
-    const lines = []; let cur = "";
-    for (const w of words) {
-      if ((cur + " " + w).trim().length > approx && cur) { lines.push(cur); cur = w; }
-      else cur = (cur + " " + w).trim();
-      if (lines.length === maxLines) break;
+  // ---------- build the cytoscape graph (every entity once; visibility is toggled later) ----------
+  const elements = [];
+  const apexId = K.project ? K.project.id : "__apex__";
+  elements.push({ data: { id: apexId, base: "konspekt", label: "konspekt" }, classes: "apex" });
+  for (const id of nodeIds) {
+    const e = ent.get(id);
+    elements.push({ data: { id, base: labelOf(e), label: labelOf(e), kicker: e.type }, classes: "spine " + e.type });
+  }
+  for (const sid of satIds) {
+    const e = ent.get(sid);
+    elements.push({ data: { id: sid, base: labelOf(e), label: labelOf(e) }, classes: "sat " + e.entityType });
+  }
+  for (const g of rootGoals) elements.push({ data: { id: "apex>" + g, source: apexId, target: g }, classes: "apexedge" });
+  for (const e of decomposes) elements.push({ data: { id: "dec>" + e.from.id + ">" + e.to.id, source: e.from.id, target: e.to.id }, classes: "decomposes" });
+  for (const [owner, arr] of satByOwner)
+    for (const t of arr) elements.push({ data: { id: "teth>" + owner + ">" + t.id, source: owner, target: t.id }, classes: "tether " + t.kind });
+  for (const e of relates) elements.push({ data: { id: "rel>" + e.from.id + ">" + e.to.id, source: e.from.id, target: e.to.id }, classes: "relates" });
+
+  // ---------- cytoscape ----------
+  const cy = cytoscape({
+    container: document.getElementById("cy"),
+    elements,
+    minZoom: 0.15, maxZoom: 3, wheelSensitivity: 0.25,
+    boxSelectionEnabled: false, autoungrabify: true,
+    style: [
+      { selector: "node", style: {
+        "label": "data(label)", "text-wrap": "wrap", "text-max-width": "132px",
+        "text-valign": "center", "text-halign": "center",
+        "font-family": "ui-sans-serif, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+        "font-size": "11px", "font-weight": 550, "line-height": 1.2,
+        "shape": "round-rectangle", "background-color": "#fff",
+        "border-width": 1.4, "border-color": C.edge, "color": C.ink || "#1c1b19",
+        "width": "label", "height": "label", "padding": "11px",
+        "text-outline-width": 0, "transition-property": "opacity", "transition-duration": "120ms",
+      }},
+      { selector: ".goal",          style: { "border-color": C.goal.ink } },
+      { selector: ".investigation", style: { "border-color": C.investigation.ink } },
+      { selector: ".task",          style: { "border-color": C.task.ink } },
+      { selector: ".sat", style: { "font-size": "10px", "padding": "8px", "text-max-width": "118px" } },
+      { selector: ".concept",    style: { "background-color": C.concept.bg,    "border-color": C.concept.ink,    "color": C.concept.ink,    "shape": "round-rectangle" } },
+      { selector: ".noteworthy", style: { "background-color": C.noteworthy.bg, "border-color": C.noteworthy.ink, "color": C.noteworthy.ink } },
+      { selector: ".artifact",   style: { "background-color": C.artifact.bg,   "border-color": C.artifact.ink,   "color": C.artifact.ink } },
+      { selector: ".apex", style: {
+        "background-color": C.apex.bg, "border-color": C.apex.ink, "color": "#fff",
+        "font-weight": 650, "shape": "round-rectangle", "padding": "9px",
+      }},
+      { selector: "edge", style: {
+        "curve-style": "bezier", "width": 1.4, "line-color": C.edge,
+        "target-arrow-shape": "none", "transition-property": "opacity", "transition-duration": "120ms",
+      }},
+      { selector: ".apexedge", style: { "line-color": C.apexedge, "line-style": "dashed", "width": 1.3 } },
+      { selector: ".tether",          style: { "line-style": "dashed", "opacity": 0.6, "width": 1.2 } },
+      { selector: ".tether.mentions", style: { "line-color": C.concept.ink } },
+      { selector: ".tether.notes",    style: { "line-color": C.noteworthy.ink } },
+      { selector: ".tether.produces", style: { "line-color": C.artifact.ink } },
+      { selector: ".relates", style: { "curve-style": "unbundled-bezier", "control-point-distances": [-32], "line-color": C.relates, "line-style": "dotted", "width": 1.4 } },
+      { selector: ".sel", style: { "border-width": 3, "border-color": C.sel } },
+      { selector: ".faded", style: { "opacity": 0.18 } },
+    ],
+  });
+
+  // ---------- state + visibility ----------
+  const expanded = new Set();
+  let selected = null;
+
+  // apex is always shown; a root goal is always shown; any other spine node is
+  // shown iff a parent is shown AND expanded; a satellite is shown iff an owner
+  // is shown AND expanded. (Edges hide automatically when an endpoint hides.)
+  function computeVisible() {
+    const vis = new Set([apexId]);
+    const order = [...nodeIds].sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : 1));
+    for (const id of order) {
+      const ps = parents.get(id) || [];
+      if (!ps.length) { vis.add(id); continue; }
+      if (ps.some(p => vis.has(p) && expanded.has(p))) vis.add(id);
     }
-    if (lines.length < maxLines && cur) lines.push(cur);
-    if (lines.length === maxLines) {
-      let last = lines[maxLines-1];
-      const used = lines.join(" ").length;
-      if (used < str.length) lines[maxLines-1] = last.replace(/\s*\S*$/, "") + "…";
-    }
-    lines.forEach((ln, i) => {
-      const t = el("tspan", { x, y: y0 + i*lineH }); t.textContent = ln; textEl.appendChild(t);
+    for (const [owner, arr] of satByOwner)
+      if (vis.has(owner) && expanded.has(owner)) for (const t of arr) vis.add(t.id);
+    return vis;
+  }
+
+  function refreshLabels() {
+    cy.batch(() => {
+      for (const id of nodeIds) {
+        const n = cy.getElementById(id); if (n.empty()) continue;
+        const base = n.data("base");
+        if (!hasMore(id)) { n.data("label", base); continue; }
+        const hidden = (children.get(id) || []).length + (satByOwner.get(id) || []).length;
+        n.data("label", base + (expanded.has(id) ? "  −" : "  +" + hidden));
+      }
     });
-    return lines.length;
   }
 
-  // ---------- satellite placement (first expanded owner places it; others tether) ----------
-  function satelliteLayout() {
-    const placed = new Map(); // satId -> {x,y,kind,type}
-    const owners = [...expanded].filter(id => pos.has(id)).sort();
-    for (const ownerId of owners) {
-      const o = pos.get(ownerId);
-      const targets = satByOwner.get(ownerId) || [];
-      const side = o.x <= 0 ? -1 : 1;
-      let slot = 0;
-      const fresh = targets.filter(t => !placed.has(t.id));
-      const n = fresh.length;
-      for (const t of fresh) {
-        const ring = 1 + (slot % 2);                 // two rings to reduce overlap
-        const dx = side * (150 + ring * 54);
-        const dy = (slot - (n - 1) / 2) * (SAT_H + 12);
-        placed.set(t.id, { x: o.x + dx, y: o.y + dy, kind: t.kind, type: t.type });
-        slot++;
-      }
-    }
-    return placed;
+  let laidOut = false;
+  function apply(fit) {
+    const vis = computeVisible();
+    cy.batch(() => {
+      cy.nodes().forEach(n => n.style("display", vis.has(n.id()) ? "element" : "none"));
+    });
+    refreshLabels();
+    const eles = cy.elements(":visible");
+    const layout = eles.layout({
+      name: "dagre", rankDir: "TB", nodeSep: 26, rankSep: 64, edgeSep: 8,
+      animate: laidOut, animationDuration: 280,
+      fit: fit !== false, padding: 48,
+    });
+    layout.run();
+    laidOut = true;
   }
 
-  // ---------- render ----------
-  function neighborhood(id) {
-    const s = new Set([id]);
-    (parents.get(id) || []).forEach(p => s.add(p));
-    (children.get(id) || []).forEach(c => s.add(c));
-    (satByOwner.get(id) || []).forEach(t => s.add(t.id));
-    // if a satellite is selected, light up its owners
-    for (const [owner, arr] of satByOwner) if (arr.some(t => t.id === id)) { s.add(owner); }
-    return s;
+  // ---------- selection / highlight ----------
+  function highlight(id) {
+    cy.elements().removeClass("faded sel");
+    if (!id) return;
+    const n = cy.getElementById(id);
+    if (n.empty()) return;
+    const keep = n.closedNeighborhood();
+    cy.elements().difference(keep).addClass("faded");
+    n.addClass("sel");
+  }
+  function selectNode(id) { selected = id; highlight(id); renderDetail(); }
+
+  function expandAncestors(id) {
+    const stack = [id], seen = new Set();
+    while (stack.length) {
+      const cur = stack.pop();
+      for (const p of (parents.get(cur) || [])) { expanded.add(p); if (!seen.has(p)) { seen.add(p); stack.push(p); } }
+    }
+  }
+  function ensureVisible(id) {
+    if (nodeIds.has(id)) { expandAncestors(id); return; }
+    for (const [owner, arr] of satByOwner)
+      if (arr.some(t => t.id === id)) { expandAncestors(owner); expanded.add(owner); break; }
   }
 
-  function render() {
-    VP.innerHTML = "";
-    const placed = satelliteLayout();
-    const hl = selected ? neighborhood(selected) : null;
-    const dimmed = (id) => hl && !hl.has(id);
-
-    const gEdges = el("g"), gTeth = el("g"), gRel = el("g"), gSat = el("g"), gSpine = el("g");
-    VP.append(gEdges, gTeth, gRel, gSat, gSpine);
-
-    // apex connectors
-    for (const gId of rootGoals) {
-      const c = pos.get(gId);
-      gEdges.appendChild(el("path", { class: "apexedge",
-        d: `M ${APEX.x} ${APEX.y + 16} C ${APEX.x} ${(APEX.y+c.y)/2}, ${c.x} ${(APEX.y+c.y)/2}, ${c.x} ${c.y - NODE_H/2}` }));
-    }
-    // decomposes edges
-    for (const e of decomposes) {
-      const a = pos.get(e.from.id), b = pos.get(e.to.id);
-      const p = el("path", { class: "edge",
-        d: `M ${a.x} ${a.y + NODE_H/2} C ${a.x} ${(a.y+b.y)/2}, ${b.x} ${(a.y+b.y)/2}, ${b.x} ${b.y - NODE_H/2}` });
-      if (hl && !(hl.has(e.from.id) && hl.has(e.to.id))) p.classList.add("dim");
-      gEdges.appendChild(p);
-    }
-    // tethers owner -> satellite
-    for (const ownerId of expanded) {
-      const o = pos.get(ownerId); if (!o) continue;
-      for (const t of (satByOwner.get(ownerId) || [])) {
-        const s = placed.get(t.id); if (!s) continue;
-        const p = el("path", { class: "tether " + t.kind,
-          d: `M ${o.x} ${o.y} C ${(o.x+s.x)/2} ${o.y}, ${(o.x+s.x)/2} ${s.y}, ${s.x} ${s.y}` });
-        if (dimmed(ownerId) && dimmed(t.id)) p.classList.add("dim");
-        gTeth.appendChild(p);
-      }
-    }
-    // relates arcs between two shown concepts
-    for (const e of relates) {
-      const a = placed.get(e.from.id), b = placed.get(e.to.id);
-      if (!a || !b) continue;
-      const w = e.weight || 0.5;
-      gRel.appendChild(el("path", { class: "relates",
-        "stroke-width": (0.8 + w*1.8).toFixed(2), opacity: (0.35 + w*0.4).toFixed(2),
-        d: `M ${a.x} ${a.y} Q ${(a.x+b.x)/2} ${(a.y+b.y)/2 - 40} ${b.x} ${b.y}` }));
-    }
-
-    // satellites
-    for (const [id, s] of placed) {
-      const e = ent.get(id); const col = typeColor(e);
-      const g = el("g", { class: "node", transform: `translate(${s.x},${s.y})` });
-      g.dataset.id = id;
-      if (dimmed(id)) g.classList.add("dim");
-      const rx = e.entityType === "concept" ? SAT_H/2 : 6;
-      g.appendChild(el("rect", { class: "pill", x: -SAT_W/2, y: -SAT_H/2, width: SAT_W, height: SAT_H,
-        rx, fill: col.bg, stroke: col.ink }));
-      const tx = el("text", { class: "slabel", "text-anchor": "middle", fill: col.ink, y: 1 });
-      wrap(tx, labelOf(e), SAT_W - 16, 2, 11, 0, -3);
-      g.appendChild(tx);
-      if (id === selected) g.appendChild(el("rect", { class: "sel-ring", x: -SAT_W/2-3, y: -SAT_H/2-3, width: SAT_W+6, height: SAT_H+6, rx: rx+3 }));
-      gSat.appendChild(g);
-    }
-
-    // apex (project)
-    {
-      const g = el("g", { class: "node", transform: `translate(${APEX.x},${APEX.y})` });
-      g.dataset.id = K.project ? K.project.id : "";
-      const w = 150, h = 30;
-      g.appendChild(el("rect", { x: -w/2, y: -h/2, width: w, height: h, rx: 15,
-        fill: "#34322e", stroke: "#34322e" }));
-      const tx = el("text", { class: "nlabel", "text-anchor": "middle", fill: "#fff", y: 4 });
-      tx.textContent = "konspekt"; g.appendChild(tx);
-      gSpine.appendChild(g);
-    }
-    // spine nodes
-    for (const id of nodeIds) {
-      const e = ent.get(id), p = pos.get(id), col = typeColor(e);
-      const g = el("g", { class: "node", transform: `translate(${p.x},${p.y})` });
-      g.dataset.id = id;
-      if (dimmed(id)) g.classList.add("dim");
-      g.appendChild(el("rect", { x: -NODE_W/2, y: -NODE_H/2, width: NODE_W, height: NODE_H, rx: 9,
-        fill: "var(--panel)", stroke: col.ink }));
-      const tag = el("text", { class: "ntype", x: -NODE_W/2 + 11, y: -NODE_H/2 + 15, fill: col.ink });
-      tag.textContent = e.type; g.appendChild(tag);
-      const hasSat = (satByOwner.get(id) || []).length > 0;
-      if (hasSat) {
-        const badge = el("text", { class: "ntype", x: NODE_W/2 - 12, y: -NODE_H/2 + 15, fill: "var(--faint)", "text-anchor": "end" });
-        badge.textContent = expanded.has(id) ? "–" : "+" + (satByOwner.get(id).length);
-        g.appendChild(badge);
-      }
-      const tx = el("text", { class: "nlabel", "text-anchor": "middle", fill: "var(--ink)", x: 0 });
-      wrap(tx, labelOf(e), NODE_W - 18, 2, 12.5, 0, 4);
-      g.appendChild(tx);
-      if (id === selected) g.appendChild(el("rect", { class: "sel-ring", x: -NODE_W/2-3, y: -NODE_H/2-3, width: NODE_W+6, height: NODE_H+6, rx: 12 }));
-      gSpine.appendChild(g);
-    }
-    applyTransform();
-  }
-
-  function applyTransform() { VP.setAttribute("transform", `translate(${view.x},${view.y}) scale(${view.k})`); }
-
-  // ---------- fit ----------
-  function bounds() {
-    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    const acc=(x,y,w,h)=>{minX=Math.min(minX,x-w/2);maxX=Math.max(maxX,x+w/2);minY=Math.min(minY,y-h/2);maxY=Math.max(maxY,y+h/2);};
-    for (const p of pos.values()) acc(p.x,p.y,NODE_W,NODE_H);
-    acc(APEX.x,APEX.y,150,30);
-    const placed = satelliteLayout();
-    for (const s of placed.values()) acc(s.x,s.y,SAT_W,SAT_H);
-    return {minX,minY,maxX,maxY};
-  }
-  function fit() {
-    const b = bounds(), pad = 60;
-    const w = SVG.clientWidth, h = SVG.clientHeight;
-    const gw = (b.maxX-b.minX)+pad*2, gh = (b.maxY-b.minY)+pad*2;
-    view.k = Math.min(w/gw, h/gh, 1.4);
-    view.x = w/2 - ((b.minX+b.maxX)/2)*view.k;
-    view.y = h/2 - ((b.minY+b.maxY)/2)*view.k;
-    applyTransform();
-  }
-  function centerOn(x, y, k) {
-    view.k = k || view.k;
-    view.x = SVG.clientWidth/2 - x*view.k;
-    view.y = SVG.clientHeight/2 - y*view.k;
-    applyTransform();
-  }
-
-  // ---------- interaction ----------
-  let drag = null;
-  SVG.addEventListener("pointerdown", (ev) => {
-    drag = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y, moved: false };
-    SVG.classList.add("grabbing"); SVG.setPointerCapture(ev.pointerId);
-  });
-  SVG.addEventListener("pointermove", (ev) => {
-    if (!drag) return;
-    const dx = ev.clientX-drag.x, dy = ev.clientY-drag.y;
-    if (Math.abs(dx)+Math.abs(dy) > 3) drag.moved = true;
-    view.x = drag.vx+dx; view.y = drag.vy+dy; applyTransform();
-  });
-  SVG.addEventListener("pointerup", (ev) => {
-    SVG.classList.remove("grabbing");
-    if (drag && !drag.moved) {
-      const g = ev.target.closest(".node");
-      if (g && g.dataset.id) onNodeClick(g.dataset.id);
-      else { selected = null; renderDetail(); render(); }
-    }
-    drag = null;
-  });
-  SVG.addEventListener("wheel", (ev) => {
-    ev.preventDefault();
-    const rect = SVG.getBoundingClientRect();
-    const mx = ev.clientX-rect.left, my = ev.clientY-rect.top;
-    const f = Math.exp(-ev.deltaY * 0.0015);
-    const nk = Math.max(0.25, Math.min(3, view.k * f));
-    const wx = (mx-view.x)/view.k, wy = (my-view.y)/view.k;
-    view.k = nk; view.x = mx-wx*nk; view.y = my-wy*nk; applyTransform();
-  }, { passive: false });
-
-  function onNodeClick(id) {
-    selected = id;
-    if (nodeIds.has(id) && (satByOwner.get(id) || []).length) {
+  cy.on("tap", "node", (evt) => {
+    const id = evt.target.id();
+    selectNode(id);
+    if (nodeIds.has(id) && hasMore(id)) {
       if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+      apply(false);
     }
-    renderDetail(); render();
-  }
+  });
+  cy.on("tap", (evt) => { if (evt.target === cy) { selected = null; highlight(null); renderDetail(); } });
 
   // ---------- detail panel ----------
   function inlineMd(s) {
@@ -474,13 +383,11 @@
             .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
   }
   function bodyHtml(e) {
-    let b = (e.body || "").replace(/^#.*\n+/, ""); // drop leading H1 (title shown above)
+    let b = (e.body || "").replace(/^#.*\n+/, "");
     return b.split(/\n\s*\n/).map(p => "<p>" + inlineMd(p.replace(/\n/g," ")) + "</p>").join("");
   }
   function edgesFor(id) {
-    const out = edges.filter(e => e.from.id === id);
-    const inb = edges.filter(e => e.to.id === id);
-    return { out, inb };
+    return { out: edges.filter(e => e.from.id === id), inb: edges.filter(e => e.to.id === id) };
   }
   function renderDetail() {
     const pane = document.getElementById("detailPane");
@@ -522,15 +429,11 @@
 
   function goTo(id) {
     if (!ent.has(id)) return;
-    selected = id;
-    // ensure visible: if it's a satellite, expand an owner that references it
-    if (!nodeIds.has(id) && !satelliteLayout().has(id)) {
-      for (const [owner, arr] of satByOwner) if (arr.some(t => t.id === id)) { expanded.add(owner); break; }
-    }
-    renderDetail(); render();
-    const placed = satelliteLayout();
-    const p = pos.get(id) || placed.get(id);
-    if (p) centerOn(p.x, p.y, Math.max(view.k, 0.9));
+    ensureVisible(id);
+    apply(false);
+    selectNode(id);
+    const n = cy.getElementById(id);
+    if (n.nonempty()) cy.animate({ center: { eles: n }, zoom: Math.max(cy.zoom(), 0.9) }, { duration: 300 });
   }
 
   // ---------- problems panel ----------
@@ -545,9 +448,7 @@
       `<div class="msg">${inlineMd(p.message)}</div>` +
       (p.ref && ent.has(p.ref) ? `<div class="msg"><span class="ref" data-go="${p.ref}">→ ${p.ref}</span></div>` : "") +
       `</div>`).join("");
-    pane.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", () => {
-      switchTab("detail"); goTo(a.dataset.go);
-    }));
+    pane.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", () => { switchTab("detail"); goTo(a.dataset.go); }));
   }
 
   // ---------- tabs ----------
@@ -559,10 +460,11 @@
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
 
   // ---------- controls ----------
-  document.getElementById("btnFit").addEventListener("click", fit);
-  document.getElementById("btnCollapse").addEventListener("click", () => { expanded.clear(); render(); });
+  document.getElementById("btnFit").addEventListener("click", () => cy.animate({ fit: { padding: 48 } }, { duration: 250 }));
+  document.getElementById("btnCollapse").addEventListener("click", () => { expanded.clear(); apply(true); });
   document.getElementById("btnExpand").addEventListener("click", () => {
-    for (const id of satByOwner.keys()) expanded.add(id); render(); fit();
+    for (const id of nodeIds) if (hasMore(id)) expanded.add(id);
+    apply(true);
   });
   const search = document.getElementById("search");
   search.addEventListener("keydown", (ev) => {
@@ -570,7 +472,7 @@
     const q = search.value.trim().toLowerCase(); if (!q) return;
     let hit = null;
     for (const e of ent.values()) {
-      if (e.id === K.project?.id) continue;
+      if (e.id === apexId) continue;
       const hay = (e.id + " " + labelOf(e) + " " + (e.aliases||[]).join(" ")).toLowerCase();
       if (hay.includes(q)) { hit = e.id; break; }
     }
@@ -581,14 +483,12 @@
   document.getElementById("legend").innerHTML =
     [["goal","Goal"],["investigation","Investigation"],["task","Task"],
      ["concept","Concept"],["noteworthy","Noteworthy"],["artifact","Artifact"]]
-    .map(([c,l]) => `<div class="row"><span class="sw" style="background:var(--${c}-bg);border-color:var(--${c})"></span>${l}</div>`).join("");
+    .map(([c,l]) => `<div class="row"><span class="sw" style="background:${C[c].bg};border-color:${C[c].ink}"></span>${l}</div>`).join("");
 
   // ---------- boot ----------
   document.getElementById("projectGoal").textContent = K.project ? K.project.goal : "";
   renderProblems();
-  render();
-  fit();
-  window.addEventListener("resize", () => applyTransform());
+  apply(true);          // starts collapsed to the root goals, then fits
 })();
 </script>
 </body>

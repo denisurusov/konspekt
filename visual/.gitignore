@@ -2,3 +2,7 @@
 # Regenerate locally with: node build/snapshot.mjs
 # Commit it deliberately if you want the explorer to render straight from the repo.
 data/snapshot.js
+
+# Vendored third-party libraries (cytoscape, dagre, cytoscape-dagre).
+# Not committed; re-fetch with: node build/vendor.mjs
+vendor/

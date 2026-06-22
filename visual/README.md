@@ -1,36 +1,48 @@
 # konspekt · visual
 
-A **read-only, static context explorer** for a konspekt instance. It renders
-the `decomposes` DAG — goals at the top, tasks at the bottom — and lets you
-click any node to expand its satellites (concepts, noteworthy items, artifacts)
-and inspect the prose that lives in each entity's Markdown body.
+A **read-only context explorer** for a konspekt instance. It renders the
+`decomposes` DAG — goals at the top, tasks at the bottom — as a collapsible
+tree: click any node to expand its children and its satellites (concepts,
+noteworthy items, artifacts), and the layout reflows to make room. Click a node
+to inspect the prose that lives in its Markdown body.
 
-This is **v0**. It is deliberately small:
+This is **v1**. Rendering, pan/zoom, fit, hit-testing, and the layered layout
+are delegated to [Cytoscape.js](https://js.cytoscape.org/) +
+[cytoscape-dagre](https://github.com/cytoscape/cytoscape.js-dagre); the v0
+hand-rolled SVG/pan/zoom/layout is gone. What stays deliberately small:
 
 - **Snapshot, not live.** A build step reads `../instance/` once and bakes a
   single `data/snapshot.js`. The explorer loads that file. Re-run the build to
-  refresh.
-- **Skeleton = `decomposes`.** The vertical axis is pure topological depth
-  (longest path from a root goal). Nothing time-based yet.
-- **Spine + click-to-expand satellites.** The goal DAG is the backbone;
-  `mentions` / `notes` / `produces` targets appear only when you expand their
-  owner. A shared satellite is a single node with multiple tethers — identity is
-  singular, matching the store.
+  refresh, then reload the browser.
+- **Skeleton = `decomposes`.** The vertical axis is layered topological depth
+  (dagre, top-to-bottom). Nothing time-based yet.
+- **Collapsible spine + satellites.** It starts collapsed to the root goals.
+  Expanding a node reveals its `decomposes` children and its `mentions` /
+  `notes` / `produces` targets; a shared satellite is a single node with
+  multiple tethers — identity is singular, matching the store. `relates` arcs
+  draw between two concepts that are both currently shown.
 - **All nodes, all statuses.** Status, review state, supersession, and time are
-  *not* encoded as visual channels in v0; every node shows regardless. Those
-  become filters in a later pass.
+  *not* encoded as visual channels in v1; any node can be shown regardless.
+  Those become filters in a later pass.
 - **No writes.** Nothing here mutates the instance.
 
 ## Run it
 
 ```sh
+node build/vendor.mjs         # download cytoscape/dagre into ./vendor (once)
 node build/snapshot.mjs       # reads ../instance, writes data/snapshot.js
-open index.html               # or just double-click it — no server needed
+node build/serve.mjs          # serve over http; then open http://localhost:8777/
 ```
 
-The build has **no dependencies** (Node only) and the explorer is a single
-self-contained HTML file. `data/snapshot.js` works from `file://` (it assigns a
-global, so there is no `fetch`/CORS problem).
+Modern browsers refuse to load `<script src>` over `file://` ("file: URLs are
+treated as unique security origins"), so the explorer **must be served over
+http** — opening `index.html` directly no longer works. `build/serve.mjs` is a
+zero-dependency static server for exactly this (`node build/serve.mjs [port]`).
+
+The snapshot build has **no dependencies** (Node only). `data/snapshot.js` and
+the vendored libraries are both **gitignored** (re-create them with the two
+build scripts above); the explorer itself is a single self-contained
+`index.html` plus those local assets.
 
 `node build/snapshot.mjs [instanceDir] [outFile]` overrides the defaults
 (`../instance` and `./data/snapshot.js`).
@@ -66,19 +78,19 @@ enforce strict `filename == id` instead:
 KONSPEKT_FILENAME_RULE=strict node build/snapshot.mjs
 ```
 
-## Layout decisions (so a second implementer can reproduce it)
+## Layout decisions
 
-- **Rank** = longest path from a root goal (a root is a node with no inbound
-  `decomposes`). Longest-path keeps shared/multi-parent nodes — the diamonds,
-  like `investigation-operating-loop` under two goals — at their deepest
-  legitimate row, so "tasks at the bottom" stays honest.
-- **Sibling order** within a rank is `id`-sorted. There is no `order` field in
-  the schema and none is added; sort is derived, which is what makes the layout
-  reproducible.
-- **Satellite placement**: the first expanded owner (lowest id) fixes a shared
-  satellite's position; later owners only add a tether. `relates` arcs draw only
-  between two concepts that are both currently shown.
-- Expanding satellites never reflows the spine.
+- **Layering** is dagre's layered (Sugiyama-style) algorithm, `rankDir: TB`, so
+  goals sit above the investigations and tasks they decompose into. Multi-parent
+  diamonds (e.g. `investigation-operating-loop` under two goals) land at a
+  consistent depth and keep both inbound edges.
+- **Visibility** is ours, not dagre's: the apex and root goals always show; any
+  other spine node shows iff a parent is shown *and* expanded; a satellite shows
+  iff an owner is shown *and* expanded. Edges hide automatically when an
+  endpoint hides. Dagre then lays out only the visible elements and animates the
+  reflow.
+- **Determinism of input.** The snapshot's entities and edges are id-sorted, so
+  the element set handed to Cytoscape is stable; dagre itself decides geometry.
 
 ## Files
 
@@ -86,11 +98,14 @@ KONSPEKT_FILENAME_RULE=strict node build/snapshot.mjs
 visual/
   README.md
   build/snapshot.mjs     # instance -> snapshot (zero deps)
-  data/snapshot.js       # generated; loaded by the explorer
-  index.html             # the explorer (open directly)
+  build/vendor.mjs       # download cytoscape/dagre into vendor/ (gitignored)
+  build/serve.mjs        # zero-dep static http server
+  data/snapshot.js       # generated (gitignored); loaded by the explorer
+  vendor/                # cytoscape + dagre bundles (gitignored)
+  index.html             # the explorer (served over http)
 ```
 
-## Not in v0 (next passes)
+## Not in v1 (next passes)
 
 - Filters: show accepted/current only; by status; by source conversation.
 - The time axis (waypoint ribbon, provenance scrubber) — deferred until
