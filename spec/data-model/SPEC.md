@@ -8,7 +8,7 @@ The konspekt standard: the entity set, the single edge table, and the derived vi
 
 1. **Single source of truth.** Concepts, noteworthy items, and artifacts are first-class entities, stored once. "This node's concepts" and "the project's concepts" are *queries over edges*, not stored lists — dedup is structural, the project aggregate is free, cross-linking is automatic.
 2. **One graph, not two.** Goal decomposition (hierarchical) and cross-links (associative) share one `Edge` table, distinguished by `kind`. The goal tree is `edges where kind = "decomposes"`; everything else is a filtered view.
-3. **Auditable by construction.** Every entity carries `provenance` (which conversation/message it was extracted from, with optional confidence) and a `review` state (`proposed → accepted / rejected`), because an LLM maintainer *proposes* graph updates that a human accepts.
+3. **Auditable by construction.** Every entity carries `provenance` — a *content-addressed* pointer to its source text (`sourceRef` + a construction-time `contentHash`), a source `timestamp`, and optional confidence — and a `review` state (`proposed → accepted / rejected`), because an LLM maintainer *proposes* graph updates that a human accepts. Provenance anchors on the **text**, not on a host-supplied conversation/message id the maintainer cannot read; an entity verifies iff re-hashing its `sourceRef` reproduces its `contentHash`.
 4. **Summaries compose, humans win.** Each node owns its `summary`; the project summary composes the node summaries; a `pinned`, human-origin summary is never overwritten by the maintainer.
 
 ## Entities

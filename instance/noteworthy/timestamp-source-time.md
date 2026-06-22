@@ -1,0 +1,20 @@
+```yaml
+id: nw-timestamp-source-time
+kind: constraint
+status: active
+review: accepted
+provenance:
+  conversationId: provenance-as-chat-text
+  timestamp: 2026-06-22T18:00:00Z
+createdAt: 2026-06-22T18:00:00Z
+updatedAt: 2026-06-22T18:00:00Z
+```
+# Noteworthy: timestamp is source time, never transport time
+
+`provenance.timestamp` records when the source exchange *happened* and is
+binding-independent. The timeline must never be derived from transport metadata
+— e.g. a git commit time — even though the store knows it. Commit time is when a
+write landed (transport), not when a thing was said (source); reading it would
+give the dumb blob store a semantic job the contract denies it, and would break
+on any binding without commits. Source time stays a first-class field carried by
+the data.

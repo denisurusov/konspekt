@@ -61,50 +61,64 @@ It also matches the model's rule that derived views are never serialized.
   later needs an expensive structure (e.g. an embedding index for semantic
   matching), that is a separate caching decision and does not change this one.
 
-## Idempotence (watermark + content hash)
+## Idempotence (content-addressed source)
 
 Running the pass twice yields the same instance as running it once —
 `f(f(x)) = f(x)`: no duplicated entities, no churned summaries, no second
 commit. This is what makes a pass safe to re-run — after a crash, on a timer,
 or mid-session.
 
-Idempotence lives at two levels; the first is primary.
+The guarantee rests on **content-addressed provenance**. Ingestion is
+*push-based*: at extraction time the maintainer writes the source excerpt into
+the store as a content-addressed blob and stamps each atom's provenance with
+that `sourceRef` and its `contentHash`. A source's identity *is* its content
+hash. In the GitHub binding the blob SHA is that hash, so the store dedups
+byte-identical excerpts for free and the hash invariant holds structurally.
 
-- **Skip-level (watermark).** Provenance already records which message every
-  entity came from, so the instance *is* the ledger of consumed messages — no
-  separate bookkeeping. Keep a watermark per `conversationId`: the last
-  `messageId` processed. The next pass extracts only the tail (messages after
-  the watermark) and never calls the extractor on consumed messages. The no-op
-  comes from *not doing the work*.
-- **Match-level (resolution ladder).** If a consumed message is re-extracted
-  anyway, each atom should resolve to its existing entity as a duplicate and
-  change nothing.
+Idempotence lives at two levels; **match-level is primary** (the inversion from
+an earlier watermark-first design).
 
-Skip-level is primary because **extraction is non-deterministic**: re-running
-the LLM over the same message need not yield identical atoms — a reworded
-concept misses the alias index and risks a duplicate. Match-level idempotence
-therefore cannot be guaranteed by the extractor; it depends on the reconciler,
-which is deterministic only on exact id / alias hits. Skip-level removes the
-second extraction entirely and sidesteps the problem. Provenance is what makes
-the skip possible — which is why it is recorded at **message** granularity: the
-watermark's resolution equals provenance's resolution, enabling precise resume.
+- **Match-level (content-addressed dedup).** Re-extracting a consumed exchange
+  reproduces the same source excerpt → the same `contentHash` → the store
+  already holds that blob and the atoms resolve to existing entities. Nothing
+  changes. This is robust *because the source text is near-deterministic even
+  when atom extraction is not*: copying bytes reproduces them; interpreting them
+  need not. Anchoring identity on the source rather than on the extracted atoms
+  puts the stable key *underneath* the unstable layer — the one place it can be
+  trusted.
+- **Skip-level (optimization).** To avoid paying for re-extraction at all, a
+  pass may process only the tail — exchanges newer than the latest source
+  `timestamp` already recorded for a conversation. Ordering is by **timestamp**,
+  not by a host message id the maintainer cannot read. This is now an
+  *optimization*, not the correctness guarantee: skip it, or get the cut wrong,
+  and match-level still makes the pass a no-op.
 
-Two cases the watermark must respect:
+**Edited / branched messages need no special case.** Changed text hashes to a
+different `contentHash`, so it is simply a *different source*; its atoms are new
+extractions, reconciled normally against the graph. Identity-by-content absorbs
+the edit — the old "same id, changed hash" branch is retired.
 
-- **Edited / branched messages.** If a message's content changes after
-  processing, a naive watermark wrongly skips it. Provenance carries a
-  **content hash**; "same `messageId`, changed hash" is detected, and that one
-  message falls back to match-level re-processing.
-- **Cross-conversation.** Watermarks are per `conversationId`, so independent
-  conversations never interfere.
+**Cross-conversation** interference does not arise: identity is global by
+content hash, and `conversationId` is optional grouping metadata, not a
+correctness key.
+
+**Verify probe.** An entity's provenance verifies **iff** hashing the text at
+its `sourceRef` reproduces its stored `contentHash`. In the GitHub binding this
+is structural — the blob SHA *is* the hash — so it can fail only on a dangling
+pointer or a corrupt store. In a future deep-link binding, where the addressed
+text can drift (an edited message, a rotted link), this probe is the actual
+integrity gate; that is why address (`sourceRef`) and digest (`contentHash`) are
+two fields, even where the git binding lets them coincide.
 
 Consequence: once re-runs are no-ops, the pass is safe to trigger **any way** —
 end-of-session, scheduled, manual, post-crash — instead of requiring fragile
 exactly-once delivery. This is what frees the trigger + transport stream.
 
-> Provenance support: idempotence relies on `provenance.messageId` (the
-> watermark key) and `provenance.contentHash` (edit detection), both defined on
-> `Provenance` in `../data-model/schema.ts`.
+> Provenance support: idempotence relies on `provenance.sourceRef` (the
+> content-addressed source the store dedups on) and `provenance.contentHash`
+> (its digest, and the verify probe); the skip-level optimization orders by
+> `provenance.timestamp`. All are defined on `Provenance` in
+> `../data-model/schema.ts`.
 
 ## Status transitions and supersession
 
@@ -119,7 +133,7 @@ changes the *state* of one existing entity: an assumption
 *never* by adding an edge. A transition has only one endpoint, so an edge would
 need a phantom "event" node; and the derived views (`open assumptions`, …) read
 `status`, so the field must move regardless. An edge alongside it would be a
-second source of truth for one fact. The *evidence* (which message bears the
+second source of truth for one fact. The *evidence* (which source bears the
 transition) is recorded as **provenance** on the change. The human path is the
 authority verbs (`validate`, `resolve`, `lift`, …); the maintainer may *propose*
 a transition, which review confirms.
@@ -139,8 +153,8 @@ it confirms the replacement. The `review` field already carries this — no
 typed: nothing transitions, so they stay out of this family.
 
 Both cases mutate or annotate **accepted** state, so they pass through review
-like any proposal and must carry provenance, or the watermark will re-propose
-them on the next pass.
+like any proposal and must carry provenance, or the next pass will re-propose
+them. 
 
 Derived view: **current items** = entities with no inbound `supersedes` edge
 (the live decision among superseded ones).

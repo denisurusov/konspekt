@@ -58,14 +58,25 @@ export type EdgeKind =
 // ---------- Cross-cutting ----------
 
 // Where the maintainer extracted this from. Lets you trust, trace, and undo.
+// Provenance is content-addressed: it points at the source TEXT, not at a
+// host-supplied conversation/message id the maintainer cannot read from inside
+// a chat. See ../architecture/RECONCILIATION.md.
 export interface Provenance {
-  conversationId: string;
-  messageId?: string;
-  contentHash?: string; // hash of the source message; "same messageId, changed
-                        // hash" flags an edited/branched message so the
-                        // idempotence watermark re-processes it (../architecture/RECONCILIATION.md)
-  timestamp: string;   // ISO 8601
+  sourceRef: string;   // content-pinned address of the source excerpt
+                       // (e.g. a git blob SHA or `path@commit`)
+  contentHash: string; // digest of that source text, captured at construction
+                       // time. Verifies iff re-hashing sourceRef reproduces it.
+                       // In the GitHub binding the blob SHA IS this hash, so the
+                       // invariant holds structurally. Identity is the hash:
+                       // edited text -> new hash -> a new source, so edits need
+                       // no special-casing.
+  timestamp: string;   // ISO 8601 — when the source exchange HAPPENED (source
+                       // time, not persist time). Binding-independent: never
+                       // read from transport metadata (e.g. git commit time).
+                       // The timeline key.
   confidence?: number; // 0..1, from the maintainer LLM
+  conversationId?: string; // optional grouping metadata when a host exposes it;
+                       // host-injected, never minted by the maintainer.
 }
 
 // Everything the maintainer extracts is PROPOSED, then a human accepts/rejects.

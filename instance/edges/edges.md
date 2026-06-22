@@ -29,6 +29,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-dec-oploop-reconcile | decomposes | node:investigation-operating-loop | node:task-reconciliation | |
 | e-dec-oploop-trigger | decomposes | node:investigation-operating-loop | node:task-trigger-transport | |
 | e-dec-oploop-review | decomposes | node:investigation-operating-loop | node:task-review-ergonomics | |
+| e-dec-oploop-provenance | decomposes | node:investigation-operating-loop | node:task-provenance-model | |
 | e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state | |
 | e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence | |
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue | |
@@ -44,6 +45,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-men-review-sep | mentions | node:task-review-ergonomics | concept:concept-propose-accept-separation | |
 | e-men-ingestion-sep | mentions | node:task-ingestion-mode | concept:concept-propose-accept-separation | |
 | e-men-reconcile-sep | mentions | node:task-reconciliation | concept:concept-propose-accept-separation | |
+| e-men-provenance-caprov | mentions | node:task-provenance-model | concept:concept-content-addressed-provenance | |
 | e-not-valid-hyp | notes | node:investigation-validation | noteworthy:nw-hypotheses-not-proof | |
 | e-not-valid-vocab | notes | node:investigation-validation | noteworthy:nw-validation-is-vocabulary | |
 | e-not-valid-curated | notes | node:investigation-validation | noteworthy:nw-curated-context-accuracy | |
@@ -57,6 +59,9 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-review-noblock | notes | node:task-review-ergonomics | noteworthy:nw-review-doesnt-block-persist | |
 | e-not-review-triage | notes | node:task-review-ergonomics | noteworthy:nw-confidence-triages-not-accepts | |
 | e-not-ingestion-convid | notes | node:task-ingestion-mode | noteworthy:nw-conversationid-host-injected | |
+| e-not-provenance-decision | notes | node:task-provenance-model | noteworthy:nw-provenance-content-addressed | |
+| e-not-provenance-pushbased | notes | node:task-provenance-model | noteworthy:nw-push-based-idempotence | |
+| e-not-provenance-timestamp | notes | node:task-provenance-model | noteworthy:nw-timestamp-source-time | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -65,6 +70,9 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-prod-reconciliation-doc | produces | node:task-reconciliation | artifact:artifact-reconciliation | |
 | e-prod-trigger-transport | produces | node:task-trigger-transport | artifact:artifact-transport | |
 | e-prod-review-ergonomics | produces | node:task-review-ergonomics | artifact:artifact-review | |
+| e-prod-provenance-schema | produces | node:task-provenance-model | artifact:artifact-schema | |
+| e-prod-provenance-spec | produces | node:task-provenance-model | artifact:artifact-spec | |
+| e-prod-provenance-reconciliation | produces | node:task-provenance-model | artifact:artifact-reconciliation | |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
 | e-mark-curated | marks | waypoint:wp-curated-goal | node:goal-curated-context | |
@@ -73,7 +81,9 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-mark-naming | marks | waypoint:wp-naming | node:investigation-naming | |
 | e-mark-repo | marks | waypoint:wp-repo-structure | node:investigation-repo-structure | |
 | e-mark-spec-split | marks | waypoint:wp-spec-split | node:investigation-repo-structure | |
+| e-mark-provenance | marks | waypoint:wp-provenance-model | node:investigation-operating-loop | |
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |
 | e-rel-contract-legible | relates | concept:concept-transport-contract | concept:concept-legible-over-defensible | 0.5 |
+| e-rel-caprov-contract | relates | concept:concept-content-addressed-provenance | concept:concept-transport-contract | 0.5 |
