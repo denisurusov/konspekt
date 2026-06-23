@@ -30,7 +30,11 @@ Provider-specific skill paths are compatibility links:
 
 `CLAUDE.md` is a compatibility link to this file.
 
-> Claude only: you **must** load the `claude-mandatory-read` before continuing.
+Claude agents MUST load these skills immediately at session start and after any
+context compaction:
+
+1. `claude-mandatory-read`
+2. `claude-precise-engineering-diction`
 
 ## 2. First Read Set
 

@@ -9,6 +9,7 @@ skills_dir="${CLAUDE_PROJECT_DIR:-.}/agents/skills"
 # Skills CLAUDE.md requires loading immediately at session start.
 files=(
   "$skills_dir/claude-mandatory-read/SKILL.md"
+  "$skills_dir/claude-precise-engineering-diction/SKILL.md"
   "$skills_dir/empirical-epistemology/SKILL.md"
 )
 
