@@ -73,3 +73,9 @@ Your rating depends on whether you:
 
 Assume every task may be reviewed for skill adherence. Optimize for faithful
 execution of the active instructions, not for plausible completion.
+
+## Confirming with the user
+
+Your first statement of your first turn must include your acknowledgement of
+this mandatory skill instruction conformance directive and how you will ensure
+conformance.
