@@ -66,6 +66,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-oploop-triggers | notes | node:investigation-operating-loop | noteworthy:nw-triggers-event-not-cadence | |
 | e-not-trigger-triggers | notes | node:task-trigger-transport | noteworthy:nw-triggers-event-not-cadence | |
 | e-not-review-forced | notes | node:task-review-ergonomics | noteworthy:nw-venturing-must-be-forced | |
+| e-not-repo-derive | notes | node:investigation-repo-structure | noteworthy:nw-derive-not-copy | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -78,6 +79,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-prod-provenance-spec | produces | node:task-provenance-model | artifact:artifact-spec | |
 | e-prod-provenance-reconciliation | produces | node:task-provenance-model | artifact:artifact-reconciliation | |
 | e-prod-adoption-setup | produces | node:task-adoption-path | artifact:artifact-setup | |
+| e-prod-adoption-distribution | produces | node:task-adoption-path | artifact:artifact-distribution | |
 | e-prod-review-skill | produces | node:task-review-ergonomics | artifact:artifact-atom-readiness-skill | |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
