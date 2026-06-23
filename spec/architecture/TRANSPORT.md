@@ -2,7 +2,7 @@
 
 The interface a durable store must satisfy to hold a konspekt instance, and the bindings that implement it. Reconciliation settles *how* a pass stays correct; serialization settles *what* lands on disk; transport settles *where* the instance lives and *how* a conversation reads it in and writes it back — the half of the operating loop that lets state outlive a single conversation.
 
-Triggers — *when* a pass fires — are deliberately absent. Once re-runs are no-ops (see `RECONCILIATION.md`), firing is host policy, not standard; it lives in `reference/`. This document specifies the store, not the schedule.
+Triggers — *when* a pass fires — are deliberately absent. Once re-runs are no-ops (see `RECONCILIATION.md`), firing is host policy, not standard — host discretion, with no designated home in the standard. This document specifies the store, not the schedule.
 
 ## The contract
 

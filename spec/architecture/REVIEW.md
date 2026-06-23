@@ -2,7 +2,7 @@
 
 The human-in-the-loop gate: how a maintainer's proposed changes become accepted graph state. Reconciliation settles *how* an extraction merges; review settles *who gets to bless the merge*. It exists because the maintainer **proposes** and a human **accepts** — and because the cheapest ingestion mode (the working LLM maintaining its own instance) collapses that separation unless something holds it open. Review is what holds it open.
 
-Like triggers, the *interface* of review — the diff UI, the buttons, when the human is prompted — is host policy and lives in `reference/`. This document specifies the discipline the data must obey, not the UX.
+Like triggers, the *interface* of review — the diff UI, the buttons, when the human is prompted — is host policy, host discretion with no designated home in the standard. This document specifies the discipline the data must obey, not the UX.
 
 ## The invariant: machine proposes, human disposes
 
@@ -42,4 +42,4 @@ The alternative — persist `accepted` only, hold proposals in the working copy 
 
 **In:** the discipline — machine-proposes-only, human-accepts-only, confidence-triages-attention, batch-at-checkpoint, persist-proposed. Binding-neutral; identical on GitHub, Drive, or paper.
 
-**Out:** the review *surface* — how the diff is shown, how the human is prompted, what a click does. Host policy, lives in `reference/`, and may differ per binding: an inline conversational diff today; a queue or dashboard for an asynchronous binding later, which is also where the `accept` / `reject` verbs and any pull-request projection live (see `TRANSPORT.md`).
+**Out:** the review *surface* — how the diff is shown, how the human is prompted, what a click does. Host policy — host discretion with no designated home in the standard — and may differ per binding: an inline conversational diff today; a queue or dashboard for an asynchronous binding later, which is also where the `accept` / `reject` verbs and any pull-request projection live (see `TRANSPORT.md`).
