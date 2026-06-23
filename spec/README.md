@@ -7,4 +7,4 @@ The konspekt standard, split along the seam between *what state is* and *how sta
 
 The two specs answer different questions. The data-model spec is stable vocabulary; the architecture spec is machinery. Keeping them apart stops machinery decisions from leaking into the portable contract a second implementer has to honor.
 
-**Not here, on purpose: triggers.** *When* a maintenance pass fires — per-turn, end-of-session, manual — is host policy, not standard. It lives in `reference/`. The spec owns only the invariant that makes firing safe (idempotence), never the firing itself.
+**Not here, on purpose: trigger timing.** *When* a maintenance pass fires is unspecifiable host discretion — and there is less to it than it looks. A durable write is either a machine proposal or a human decision; that is the propose-accept invariant the data-model spec already owns, seen from the "what causes a write" angle. There is no separate "triggers" concept to home elsewhere. The spec owns the invariants that make firing safe and meaningful — idempotence, and propose-accept — never the firing itself.

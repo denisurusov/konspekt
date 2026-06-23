@@ -37,21 +37,19 @@ Before changing repository content, read:
 1. `README.md`
 2. the relevant file under `spec/`
 3. the relevant file under `.konspekt/instance/`, when changing live project-state records
-4. `reference/README.md`, when touching the reference implementation area
 
 Do not rely on memory when the current repository can be inspected directly.
 
 ## 3. Repository Perspective
 
-This repository owns the konspekt standard, its future reference
-implementation, and its dogfooded project-state instance.
+This repository owns the konspekt standard and its dogfooded project-state
+instance.
 
 Keep these surfaces distinct:
 
 | Surface | Perspective |
 |---------|-------------|
 | `spec/` | Normative standard and architecture. |
-| `reference/` | Reference implementation area. |
 | `.konspekt/` | konspekt umbrella: the portable instance plus this repo's operating envelope. |
 | `.konspekt/instance/` | Live konspekt-format project state (the portable unit; `sources/` included). |
 | `agents/skills/` | Shared skills consumed by provider-specific integrations. |
