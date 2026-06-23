@@ -51,17 +51,32 @@ Not duplicated here — single source of truth:
 - `note:` / `note "…"` is **not** a konspekt capture verb — it appends to
   `.konspekt/NOTES.md` (human scratchpad), never reconciled into the graph.
 
-## Trigger cadence — OPEN DECISION
+## Triggers — how the loop fires
 
-*When* a maintenance pass fires is the one knob the spec refuses to standardize,
-and it is **not yet decided** for this instance. Candidates:
+Settled: the loop fires on **two events**, not on a cadence (no clock, turn, or
+session rhythm — "session" has no portable meaning across LLM vendors, and
+per-turn firing is pure noise).
 
-- **per-turn** — propose after every exchange. Highest fidelity, highest noise.
-- **end-of-session** — one pass as the conversation winds down. Less churn,
-  risks losing detail from a long session.
-- **manual-only** — fires only on an explicit `sync` / `persist` /
-  `sync_persist`. Most controlled; relies on the human remembering.
+1. **Atom-ready (LLM-ventured).** The maintainer watches the thread and, when it
+   judges that a durable atom has crystallized — a decision landed, a concept got
+   named, a task changed status — it *ventures* the extraction as a proposal
+   (`sync` into the working copy, always `review: proposed`). It never accepts
+   its own ventures. Readiness is judged against the node types
+   (`goal | investigation | experiment | topic | task | note`, plus concepts,
+   noteworthy, artifacts); workable but explicitly imperfect.
+2. **Human manual command.** `sync` / `persist` / `sync_persist` and the
+   authority verbs (`pin`, `validate`, `refute`, `resolve`, `abandon`, `lift`).
+   The deterministic, authoritative side — it accepts and it writes durably.
+   Human authority carries acceptance.
 
-Observed status quo is **manual-only** (a human drives the connector and issues
-persists explicitly). That is the current behaviour, not a ratified choice;
-resolve it before generalizing into the adopter template.
+The two events map onto the propose/persist split: the LLM drives **proposing**
+on judgment; the human drives **accepting and persisting** on command. The
+propose-accept separation stays intact — ventures are candidates; the command is
+what makes anything durable.
+
+**Readiness bar.** "Venture when an atom is ready" must bias toward *holding*
+until something has settled, not narrating every exchange — otherwise it decays
+back into the per-turn noise excluded above. Hold by default; venture on
+crystallization.
+
+Recorded in the instance as `wp-triggers` / `nw-triggers-event-not-cadence`.

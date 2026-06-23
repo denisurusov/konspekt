@@ -62,6 +62,8 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-provenance-decision | notes | node:task-provenance-model | noteworthy:nw-provenance-content-addressed | |
 | e-not-provenance-pushbased | notes | node:task-provenance-model | noteworthy:nw-push-based-idempotence | |
 | e-not-provenance-timestamp | notes | node:task-provenance-model | noteworthy:nw-timestamp-source-time | |
+| e-not-oploop-triggers | notes | node:investigation-operating-loop | noteworthy:nw-triggers-event-not-cadence | |
+| e-not-trigger-triggers | notes | node:task-trigger-transport | noteworthy:nw-triggers-event-not-cadence | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -82,6 +84,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-mark-repo | marks | waypoint:wp-repo-structure | node:investigation-repo-structure | |
 | e-mark-spec-split | marks | waypoint:wp-spec-split | node:investigation-repo-structure | |
 | e-mark-provenance | marks | waypoint:wp-provenance-model | node:investigation-operating-loop | |
+| e-mark-triggers | marks | waypoint:wp-triggers | node:investigation-operating-loop | |
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |
