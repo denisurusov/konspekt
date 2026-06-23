@@ -30,6 +30,8 @@ Provider-specific skill paths are compatibility links:
 
 `CLAUDE.md` is a compatibility link to this file.
 
+> Claude only: you **must** load the `claude-mandatory-read` before continuing.
+
 ## 2. First Read Set
 
 Before changing repository content, read:
