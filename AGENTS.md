@@ -14,6 +14,10 @@ All agents MUST load the `empirical-epistemology` skill immediately.
 All agents MUST load `ontology-perspective-discipline` before editing
 documentation or skills.
 
+All agents maintaining the konspekt instance MUST load `konspekt-atom-readiness`
+— it forces the propose half of the operating loop: detect crystallized atoms,
+venture specific sync proposals, never self-accept.
+
 The canonical skill directory is:
 
 ```text
@@ -29,12 +33,6 @@ Provider-specific skill paths are compatibility links:
 ```
 
 `CLAUDE.md` is a compatibility link to this file.
-
-Claude agents MUST load these skills immediately at session start and after any
-context compaction:
-
-1. `claude-mandatory-read`
-2. `claude-precise-engineering-diction`
 
 ## 2. First Read Set
 
@@ -56,6 +54,7 @@ Keep these surfaces distinct:
 | Surface | Perspective |
 |---------|-------------|
 | `spec/` | Normative standard and architecture. |
+| `setup/` | Adopter kit: scaffolder and seed templates for new adopter repos. |
 | `.konspekt/` | konspekt umbrella: the portable instance plus this repo's operating envelope. |
 | `.konspekt/instance/` | Live konspekt-format project state (the portable unit; `sources/` included). |
 | `agents/skills/` | Shared skills consumed by provider-specific integrations. |
