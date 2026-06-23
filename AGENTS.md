@@ -55,6 +55,7 @@ Keep these surfaces distinct:
 |---------|-------------|
 | `spec/` | Normative standard and architecture. |
 | `setup/` | Adopter kit: scaffolder and seed templates for new adopter repos. |
+| `distribution/` | Generated release projection of the outward-facing subset. Do not hand-edit; regenerate from root via `distribution/build/distribute.mjs`. |
 | `.konspekt/` | konspekt umbrella: the portable instance plus this repo's operating envelope. |
 | `.konspekt/instance/` | Live konspekt-format project state (the portable unit; `sources/` included). |
 | `agents/skills/` | Shared skills consumed by provider-specific integrations. |
@@ -63,6 +64,7 @@ Keep these surfaces distinct:
 Do not let instance notes become the standard, and do not let provider-specific
 paths become the canonical skill source. Do not let the operating envelope
 (`.konspekt/OPERATING.md`, `.konspekt/NOTES.md`) leak into the portable instance.
+Do not hand-edit `distribution/`; it is derived from root.
 
 ## 4. Editing Discipline
 

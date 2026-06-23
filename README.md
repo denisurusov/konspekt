@@ -21,6 +21,7 @@ The two converge on one thing: a durable, structured, human-readable representat
 
 - `spec/` — the standard, split into `data-model/` (the portable vocabulary: `SPEC.md`, `schema.ts`) and `architecture/` (how state is kept true and carried: `RECONCILIATION.md`, the **v1** `SERIALIZATION.md`, and `TRANSPORT.md`).
 - `setup/` — the adopter kit: a zero-dependency Node scaffolder (`init.mjs`) plus seed templates that drop a `.konspekt/` umbrella into any project repo. See `setup/README.md`.
+- `distribution/` — outward-facing release projections, **derived** from root by `build/distribute.mjs` (never hand-copied): the publishable subset (`spec/`, `setup/`, the konspekt skills) baked into a versioned, regenerable projection. The dogfood instance and `visual/` are excluded. Versions get cut once the spec settles.
 - `.konspekt/` — the konspekt umbrella. Holds `instance/` (konspekt eating its own dog food: the live state of building konspekt, in konspekt's own format — the first guinea pig) plus this repo's operating envelope (`OPERATING.md`, `NOTES.md`).
 - `visual/` — a read-only context explorer that bakes a snapshot of the instance and renders the `decomposes` DAG; parsing doubles as a conformance check.
 
