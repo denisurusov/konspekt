@@ -20,8 +20,19 @@ The two converge on one thing: a durable, structured, human-readable representat
 ## Layout
 
 - `spec/` — the standard, split into `data-model/` (the portable vocabulary: `SPEC.md`, `schema.ts`) and `architecture/` (how state is kept true and carried: `RECONCILIATION.md`, the **v1** `SERIALIZATION.md`, and `TRANSPORT.md`).
+- `setup/` — the adopter kit: a zero-dependency Node scaffolder (`init.mjs`) plus seed templates that drop a `.konspekt/` umbrella into any project repo. See `setup/README.md`.
 - `.konspekt/` — the konspekt umbrella. Holds `instance/` (konspekt eating its own dog food: the live state of building konspekt, in konspekt's own format — the first guinea pig) plus this repo's operating envelope (`OPERATING.md`, `NOTES.md`).
 - `visual/` — a read-only context explorer that bakes a snapshot of the instance and renders the `decomposes` DAG; parsing doubles as a conformance check.
+
+## Adopt it
+
+`setup/` scaffolds konspekt into your own repo. From your project root (Node 18+):
+
+```
+node setup/init.mjs --name "My Project" --goal "what the project is for"
+```
+
+That writes a `.konspekt/` umbrella — a seed instance (`project.md`, an empty edge table, the entity directories) plus an operating envelope (`OPERATING.md`, `NOTES.md`) — and adds a konspekt stanza to your `AGENTS.md` so any agent in the repo reads the instance first and respects propose-accept. Review it, then commit — or pass `--push` to commit and push for you. It's idempotent: it won't clobber an existing `.konspekt/instance/`. Full walkthrough in `setup/README.md`.
 
 ## Status
 
