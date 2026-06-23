@@ -11,7 +11,7 @@ are delegated to [Cytoscape.js](https://js.cytoscape.org/) +
 [cytoscape-dagre](https://github.com/cytoscape/cytoscape.js-dagre); the v0
 hand-rolled SVG/pan/zoom/layout is gone. What stays deliberately small:
 
-- **Snapshot, not live.** A build step reads `../instance/` once and bakes a
+- **Snapshot, not live.** A build step reads `../.konspekt/instance/` once and bakes a
   single `data/snapshot.js`. The explorer loads that file. Re-run the build to
   refresh, then reload the browser.
 - **Skeleton = `decomposes`.** The vertical axis is layered topological depth
@@ -30,7 +30,7 @@ hand-rolled SVG/pan/zoom/layout is gone. What stays deliberately small:
 
 ```sh
 node build/vendor.mjs         # download cytoscape/dagre into ./vendor (once)
-node build/snapshot.mjs       # reads ../instance, writes data/snapshot.js
+node build/snapshot.mjs       # reads ../.konspekt/instance, writes data/snapshot.js
 node build/serve.mjs          # serve over http; then open http://localhost:8777/
 ```
 
@@ -45,7 +45,7 @@ build scripts above); the explorer itself is a single self-contained
 `index.html` plus those local assets.
 
 `node build/snapshot.mjs [instanceDir] [outFile]` overrides the defaults
-(`../instance` and `./data/snapshot.js`).
+(`../.konspekt/instance` and `./data/snapshot.js`).
 
 ## What it does for free: a conformance check
 

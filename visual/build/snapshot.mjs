@@ -20,7 +20,7 @@
 //     most want to see it.
 //
 // Usage:  node build/snapshot.mjs [instanceDir] [outFile]
-//   defaults: instanceDir = ../instance (resolved from repo root)
+//   defaults: instanceDir = ../.konspekt/instance (resolved from repo root)
 //             outFile     = ./data/snapshot.js
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -32,7 +32,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const VISUAL_DIR = resolve(__dirname, "..");
 const REPO_ROOT = resolve(VISUAL_DIR, "..");
 
-const instanceDir = resolve(process.argv[2] || join(REPO_ROOT, "instance"));
+const instanceDir = resolve(process.argv[2] || join(REPO_ROOT, ".konspekt", "instance"));
 const outFile = resolve(process.argv[3] || join(VISUAL_DIR, "data", "snapshot.js"));
 
 const SERIALIZATION_VERSION = "v1";
