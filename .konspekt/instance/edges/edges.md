@@ -85,6 +85,8 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-mark-spec-split | marks | waypoint:wp-spec-split | node:investigation-repo-structure | |
 | e-mark-provenance | marks | waypoint:wp-provenance-model | node:investigation-operating-loop | |
 | e-mark-triggers | marks | waypoint:wp-triggers | node:investigation-operating-loop | |
+| e-mark-delref-repo | marks | waypoint:wp-delete-reference | node:investigation-repo-structure | |
+| e-mark-delref-oploop | marks | waypoint:wp-delete-reference | node:investigation-operating-loop | |
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |
