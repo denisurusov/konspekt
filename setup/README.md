@@ -57,4 +57,19 @@ present.
    konspekt spec. `.konspekt/OPERATING.md` is the policy you just adopted —
    edit it to taste; it is yours, not the standard's.
 
+## Web & mobile
+
+The steps above seed a **repo**. If your project lives in a platform-native
+context slot instead — a Claude Project, a custom GPT, a Gemini Gem — there is no
+working tree for an agent to discover. The instance still lives in a repo
+(reached over a GitHub connector); what changes is how a conversation learns to
+tend it.
+
+`WEBMOBILE_SEED.md` is that bridge: a compact, paste-able instruction — the
+slot-equivalent of the `AGENTS.md` stanza — that points the conversation at the
+repo and tells it to operate the loop. It is a pointer, not a payload: the
+knowledge stays in the repo; the seed only orients the conversation. Place it
+once in your slot (the file carries the paste-in text and the connector
+requirements), wire a GitHub connector, and the conversation is konspekt-enabled.
+
 konspekt is open and impact-primary: adoption, even by copying, is the win.
