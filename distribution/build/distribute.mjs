@@ -35,9 +35,9 @@ const version = opt("--version", "latest");
 const INCLUDE = [
   ["spec", "spec"],
   ["setup", "setup"],
-  ["agents/skills/konspekt-atom-readiness", "agents/skills/konspekt-atom-readiness"],
-  ["agents/skills/empirical-epistemology", "agents/skills/empirical-epistemology"],
-  ["agents/skills/ontology-perspective-discipline", "agents/skills/ontology-perspective-discipline"],
+  [".claude/skills/konspekt-atom-readiness", ".claude/skills/konspekt-atom-readiness"],
+  [".claude/skills/empirical-epistemology", ".claude/skills/empirical-epistemology"],
+  [".claude/skills/ontology-perspective-discipline", ".claude/skills/ontology-perspective-discipline"],
 ];
 
 let commit = "unknown";
@@ -84,7 +84,7 @@ writeFileSync(
     `## Contents\n\n` +
     `- \`spec/\` — the standard a second implementer conforms to.\n` +
     `- \`setup/\` — the adopter kit (scaffolder + templates).\n` +
-    `- \`agents/skills/\` — the maintainer skills an adopter's agent loads.\n\n` +
+    `- \`.claude/skills/\` — the maintainer skills an adopter's agent loads.\n\n` +
     `The dogfood \`.konspekt/\` instance and the \`visual/\` explorer are excluded\n` +
     `by design — internal, not part of what an adopter conforms to or runs.\n`
 );

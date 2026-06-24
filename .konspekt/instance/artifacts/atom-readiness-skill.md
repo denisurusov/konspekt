@@ -2,7 +2,7 @@
 id: artifact-atom-readiness-skill
 name: konspekt-atom-readiness skill
 kind: doc
-location: agents/skills/konspekt-atom-readiness/SKILL.md
+location: .claude/skills/konspekt-atom-readiness/SKILL.md
 review: accepted
 provenance:
   conversationId: setup-and-operating-loop

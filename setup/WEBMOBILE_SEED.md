@@ -28,7 +28,7 @@ This conversation is konspekt-enabled. The backend repo is `<owner>/<repo>`.
 Before acting, read it (via the GitHub connector — or, if your session has a
 container, by cloning the repo into it for a full local pass):
 
-- `agents/skills/` — the maintainer skills, especially `konspekt-atom-readiness`
+- `.claude/skills/` — the maintainer skills, especially `konspekt-atom-readiness`
 - `spec/data-model/` — the entities, review states, and edge kinds you propose against
 - `spec/architecture/` — reconciliation, serialization, transport, review
 - `.konspekt/OPERATING.md` — this project's operating loop and trigger policy

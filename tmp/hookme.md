@@ -1,1 +1,0 @@
-Reading this file triggers a Claude hook and writes the hook event JSON to `tmp/hook_event_json`.
