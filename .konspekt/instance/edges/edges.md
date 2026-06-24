@@ -31,6 +31,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-dec-oploop-trigger | decomposes | node:investigation-operating-loop | node:task-trigger-transport | |
 | e-dec-oploop-review | decomposes | node:investigation-operating-loop | node:task-review-ergonomics | |
 | e-dec-oploop-provenance | decomposes | node:investigation-operating-loop | node:task-provenance-model | |
+| e-dec-oploop-central | decomposes | node:investigation-operating-loop | node:task-central-service-binding | |
 | e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state | |
 | e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence | |
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue | |
@@ -43,6 +44,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-men-comp-legible | mentions | node:investigation-competition | concept:concept-legible-over-defensible | |
 | e-men-second-gap | mentions | node:task-second-implementer | concept:concept-second-implementer-gap | |
 | e-men-trigger-contract | mentions | node:task-trigger-transport | concept:concept-transport-contract | |
+| e-men-central-contract | mentions | node:task-central-service-binding | concept:concept-transport-contract | |
 | e-men-review-sep | mentions | node:task-review-ergonomics | concept:concept-propose-accept-separation | |
 | e-men-ingestion-sep | mentions | node:task-ingestion-mode | concept:concept-propose-accept-separation | |
 | e-men-reconcile-sep | mentions | node:task-reconciliation | concept:concept-propose-accept-separation | |
@@ -65,6 +67,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-provenance-timestamp | notes | node:task-provenance-model | noteworthy:nw-timestamp-source-time | |
 | e-not-oploop-triggers | notes | node:investigation-operating-loop | noteworthy:nw-triggers-event-not-cadence | |
 | e-not-trigger-triggers | notes | node:task-trigger-transport | noteworthy:nw-triggers-event-not-cadence | |
+| e-not-central-neutral | notes | node:task-central-service-binding | noteworthy:nw-mcp-binding-needs-neutral-read | |
 | e-not-review-forced | notes | node:task-review-ergonomics | noteworthy:nw-venturing-must-be-forced | |
 | e-not-repo-derive | notes | node:investigation-repo-structure | noteworthy:nw-derive-not-copy | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |

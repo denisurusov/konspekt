@@ -1,13 +1,13 @@
 ```yaml
 id: nw-mcp-binding-needs-neutral-read
 kind: statement
-review: proposed
+review: accepted
 provenance:
   sourceRef: 79ded4d46bf3a766907fe37c0d892da433809f82
   contentHash: 79ded4d46bf3a766907fe37c0d892da433809f82
   timestamp: 2026-06-24T01:42:00Z
 createdAt: 2026-06-24T01:42:00Z
-updatedAt: 2026-06-24T01:42:00Z
+updatedAt: 2026-06-24T01:46:00Z
 ```
 # Noteworthy: An MCP binding is a skin over the core, not an alternative to REST — and the neutral read keeps it conformant
 

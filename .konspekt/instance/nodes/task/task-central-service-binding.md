@@ -6,14 +6,14 @@ status: open
 summary:
   origin: machine
   pinned: false
-  updatedAt: 2026-06-24T01:42:00Z
-review: proposed
+  updatedAt: 2026-06-24T01:46:00Z
+review: accepted
 provenance:
   sourceRef: 79ded4d46bf3a766907fe37c0d892da433809f82
   contentHash: 79ded4d46bf3a766907fe37c0d892da433809f82
   timestamp: 2026-06-24T01:42:00Z
 createdAt: 2026-06-24T01:42:00Z
-updatedAt: 2026-06-24T01:42:00Z
+updatedAt: 2026-06-24T01:46:00Z
 ```
 # Task: Central-service binding (MCP + REST over a dumb store)
 
