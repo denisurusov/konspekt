@@ -72,6 +72,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-repo-derive | notes | node:investigation-repo-structure | noteworthy:nw-derive-not-copy | |
 | e-not-trigger-skillpickup | notes | node:task-trigger-transport | noteworthy:nw-skill-pickup-transport-bound | |
 | e-not-review-skillpickup | notes | node:task-review-ergonomics | noteworthy:nw-skill-pickup-transport-bound | |
+| e-not-adoption-webmobile-seed | notes | node:task-adoption-path | noteworthy:nw-webmobile-seed-is-pointer-not-payload | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -85,6 +86,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-prod-provenance-reconciliation | produces | node:task-provenance-model | artifact:artifact-reconciliation | |
 | e-prod-adoption-setup | produces | node:task-adoption-path | artifact:artifact-setup | |
 | e-prod-adoption-distribution | produces | node:task-adoption-path | artifact:artifact-distribution | |
+| e-prod-adoption-webmobile-seed | produces | node:task-adoption-path | artifact:artifact-webmobile-seed | |
 | e-prod-review-skill | produces | node:task-review-ergonomics | artifact:artifact-atom-readiness-skill | |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread | |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability | |
