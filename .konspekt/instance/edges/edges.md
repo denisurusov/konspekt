@@ -70,6 +70,8 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-central-neutral | notes | node:task-central-service-binding | noteworthy:nw-mcp-binding-needs-neutral-read | |
 | e-not-review-forced | notes | node:task-review-ergonomics | noteworthy:nw-venturing-must-be-forced | |
 | e-not-repo-derive | notes | node:investigation-repo-structure | noteworthy:nw-derive-not-copy | |
+| e-not-trigger-skillpickup | notes | node:task-trigger-transport | noteworthy:nw-skill-pickup-transport-bound | |
+| e-not-review-skillpickup | notes | node:task-review-ergonomics | noteworthy:nw-skill-pickup-transport-bound | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
