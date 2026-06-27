@@ -11,6 +11,22 @@ A *konspekt* (a Slavic/German academic term) is a structured, condensed renderin
 
 The two converge on one thing: a durable, structured, human-readable representation of project state that lives *outside* any single conversation.
 
+## Not a memory layer
+
+konspekt is easy to mistake for AI memory — Mem0, Zep, or the built-in memory of Claude Projects, ChatGPT, and Gemini Gems. It sits at a different layer, and that is the whole point.
+
+Those systems are **machine-authored**: a model decides what is worth keeping, extracts a compressed version, and stores it to feed back to a model later. The reader is the agent. The artifact is a lossy summary you do not see and do not own — and the model can quietly drop, distort, or ignore it, a limitation the memory vendors themselves acknowledge.
+
+konspekt inverts both terms — human-authored, human-read:
+
+- **You curate; the model only proposes.** Nothing lands because an extractor judged it salient. A model may *propose*; only you *accept* (propose→accept). The guarantee is integrity, not completeness: what is in the record is there because you put it there.
+- **Verbatim, with provenance.** Each note, decision, and fact is the real wording, linked back to the actual conversation text — not a paraphrase a model might have hallucinated.
+- **A public format, not a product.** The data model is an open standard you can read, diff, and carry between platforms. No service to run, nothing to be locked into.
+
+So the user is a **human working on a project**, not an agent needing recall. konspekt is the durable, readable record of the project; platform memory is, at best, a running summary of it.
+
+The layers compose rather than collide: a konspekt instance is a clean, human-validated source you can feed *into* Mem0, Zep, or any RAG pipeline. It is upstream of memory systems, not a competitor to them.
+
 ## Stance
 
 - **Open, and impact-primary.** The win is the industry handling project portability well, by whatever hand. A vendor adopting — or copying — this format is the flywheel working, not a competitor winning.
