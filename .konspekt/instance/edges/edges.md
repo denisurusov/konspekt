@@ -57,7 +57,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-curated-assump | notes | node:goal-curated-context | noteworthy:nw-curated-context-accuracy | |
 | e-not-outcomes-assump | notes | node:task-outcomes-node-type | noteworthy:nw-curated-context-accuracy | |
 | e-not-comp-copy | notes | node:investigation-competition | noteworthy:nw-copying-is-the-win | |
-| e-not-comp-absorb | notes | node:investigation-competition | noteworthy:nw-platforms-absorb | |
+| e-not-comp-absorb | notes | node:investigation-competition | noteworthy:nw-platforms-absorb-capabilities | |
 | e-not-repo-seam | notes | node:investigation-repo-structure | noteworthy:nw-spec-seam | |
 | e-not-oploop-seam | notes | node:investigation-operating-loop | noteworthy:nw-spec-seam | |
 | e-not-trigger-probe | notes | node:task-trigger-transport | noteworthy:nw-manual-reupload-probe | |

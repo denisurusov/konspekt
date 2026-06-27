@@ -1,5 +1,5 @@
 ```yaml
-id: nw-platforms-absorb
+id: nw-platforms-absorb-capabilities
 kind: fact
 review: accepted
 provenance:
