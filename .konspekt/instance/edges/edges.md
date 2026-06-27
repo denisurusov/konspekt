@@ -50,6 +50,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-men-reconcile-sep | mentions | node:task-reconciliation | concept:concept-propose-accept-separation | |
 | e-men-provenance-caprov | mentions | node:task-provenance-model | concept:concept-content-addressed-provenance | |
 | e-men-comp-memorylayer | mentions | node:investigation-competition | concept:concept-konspekt-vs-memory-layer | |
+| e-men-repo-twopillars | mentions | node:investigation-repo-structure | concept:concept-two-pillars | |
 | e-not-valid-hyp | notes | node:investigation-validation | noteworthy:nw-hypotheses-not-proof | |
 | e-not-valid-vocab | notes | node:investigation-validation | noteworthy:nw-validation-is-vocabulary | |
 | e-not-valid-curated | notes | node:investigation-validation | noteworthy:nw-curated-context-accuracy | |
@@ -111,3 +112,5 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-rel-caprov-contract | relates | concept:concept-content-addressed-provenance | concept:concept-transport-contract | 0.5 |
 | e-rel-memorylayer-sep | relates | concept:concept-konspekt-vs-memory-layer | concept:concept-propose-accept-separation | 0.6 |
 | e-rel-memorylayer-legible | relates | concept:concept-konspekt-vs-memory-layer | concept:concept-legible-over-defensible | 0.5 |
+| e-rel-twopillars-legible | relates | concept:concept-two-pillars | concept:concept-legible-over-defensible | 0.5 |
+| e-rel-twopillars-sep | relates | concept:concept-two-pillars | concept:concept-propose-accept-separation | 0.6 |
