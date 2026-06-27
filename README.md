@@ -11,6 +11,15 @@ A *konspekt* (a Slavic/German academic term) is a structured, condensed renderin
 
 The two converge on one thing: a durable, structured, human-readable representation of project state that lives *outside* any single conversation.
 
+## The standard
+
+konspekt is two things, both small and both in `spec/data-model/`:
+
+- **A model** — a typed knowledge graph of a project. A few node types (a typed `GraphNode`, plus `Concept`, `Noteworthy`, `Artifact`, `Waypoint`) and a *single* edge table whose `kind` carries every relationship (`decomposes`, `mentions`, `relates`, `produces`, `notes`, `marks`, `supersedes`). One rule keeps it honest: store each fact once and make every "inventory" a *query over edges*, never a stored list — the goal tree is just `edges where kind = decomposes`, a node's concepts just the ones it `mentions`. Decisions, facts, artifacts, and open questions are the vertices; how they relate is the edges. A knowledge graph, deliberately a boring one.
+- **A verb set** — the small authority vocabulary a human issues over that graph: `pin`, `validate`, `refute`, `resolve`, `abandon`, `lift`. These are the override moments a reactive LLM maintainer must *not* decide on its own. They're conventions, not requirements: each reads as plain English over an entity reference, so a model that has never heard of konspekt can approximate the effect with no parser or special tokens, and skipping one degrades nothing structural.
+
+Everything else is an **implementation constraint** — not new vocabulary, but what a conformant binding must do to keep that graph true and carry it between platforms: serialization, transport, reconciliation, and the content-addressed provenance scheme. The model *requires* that state be auditable and human-accepted — every entity carries provenance and a `proposed → accepted` review state — but *how* a binding makes provenance verifiable (this repo hashes the verbatim source text with git blob SHAs) is a constraint on the binding, not part of the vocabulary you read. These live in `spec/architecture/`.
+
 ## Not a memory layer
 
 konspekt is easy to mistake for AI memory — Mem0, Zep, or the built-in memory of Claude Projects, ChatGPT, and Gemini Gems. It sits at a different layer, and that is the whole point.
