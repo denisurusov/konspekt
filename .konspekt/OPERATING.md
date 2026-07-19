@@ -2,7 +2,7 @@
 title: konspekt operating policy (this instance)
 status: Seed
 scope: How THIS repository's konspekt instance is operated. Host policy, not standard.
-updated: 2026-06-22
+updated: 2026-07-19
 ---
 
 # Operating policy — konspekt dogfood instance
@@ -30,7 +30,8 @@ This instance runs the **synchronous-review** posture defined in
 - **load** at session start — read `.konspekt/instance/` before any design or
   writing work, so the session never runs from stale context.
 - the maintainer **proposes** extractions into the working copy (`sync`); it
-  never accepts on its own (everything it adds is `review: proposed`).
+  never originates an acceptance (anything it proposes on its own judgment is
+  `review: proposed`).
 - a human-issued verb **carries its own acceptance** (`review: accepted`);
   acceptance happens in the conversation, before persist.
 - **persist** writes the working copy back to the store (GitHub `main`
