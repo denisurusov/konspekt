@@ -1,0 +1,109 @@
+# ---------------------------------------------------------------------------
+# NOT ACTIVE AT THIS PATH. Move it to enable the notifier:
+#
+#     git mv .github/scripts/konspekt-notify.workflow.yml \
+#            .github/workflows/konspekt-notify.yml
+#
+# It lives here because the GitHub connector used to author it cannot write
+# under .github/workflows/ — apps need an explicit `workflows` permission to
+# create or modify CI, which this one does not hold. The move has to come from
+# a human push. Nothing else about the file changes.
+#
+# Before it will deliver mail, add two repository secrets
+# (Settings -> Secrets and variables -> Actions):
+#
+#     SMTP_USERNAME   the sending account, e.g. a Gmail address
+#     SMTP_PASSWORD   an app password for it, NOT the account login password
+#
+# Without them the workflow still runs and still reports matched events in the
+# job summary; only the send step fails, and it is continue-on-error.
+# ---------------------------------------------------------------------------
+
+name: konspekt notify
+
+# Watches the instance for notifiable events and emails subscribers.
+#
+# Subscriptions live in .konspekt/notify.yml, which is repo config rather than
+# graph state (nw-subscriptions-are-config-not-graph). The event set and the
+# reference-only payload rule are documented in that file; the matching logic is
+# .github/scripts/konspekt-notify.mjs and has no dependencies beyond git.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".konspekt/instance/**"
+      - ".konspekt/notify.yml"
+  workflow_dispatch:
+    inputs:
+      before:
+        description: "base commit (defaults to HEAD~1)"
+        required: false
+      after:
+        description: "head commit (defaults to HEAD)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: konspekt-notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # events are computed by diffing two commits
+
+      - name: Resolve commit range
+        id: range
+        run: |
+          before="${{ github.event.inputs.before || github.event.before }}"
+          after="${{ github.event.inputs.after || github.sha }}"
+          # First push to a branch, or a force push, reports an all-zero base.
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            before="$(git rev-parse "$after"^ 2>/dev/null || echo "$after")"
+          fi
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+          echo "after=$after" >> "$GITHUB_OUTPUT"
+
+      - name: Compute events
+        id: events
+        run: |
+          node .github/scripts/konspekt-notify.mjs \
+            "${{ steps.range.outputs.before }}" \
+            "${{ steps.range.outputs.after }}" \
+            --body-file "$RUNNER_TEMP/body.txt"
+
+      - name: Send
+        if: steps.events.outputs.count != '0'
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: konspekt
+          to: ${{ steps.events.outputs.recipients }}
+          subject: "konspekt: ${{ steps.events.outputs.count }} event(s) in ${{ github.repository }}"
+          body: file://${{ runner.temp }}/body.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### konspekt notify" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Range: \`${{ steps.range.outputs.before }}\` → \`${{ steps.range.outputs.after }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Matched events: **${{ steps.events.outputs.count }}**" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$RUNNER_TEMP/body.txt" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/body.txt" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
