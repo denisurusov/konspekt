@@ -11,9 +11,10 @@
 //     timestamps are baked in, so re-running on an unchanged instance
 //     produces a byte-identical file and the git diff stays meaningful.
 //   - Entities are keyed on their in-file `id`, never on the filename, and
-//     the directory decides the EntityType. (In this instance, concepts /
-//     noteworthy / artifacts use bare-slug filenames that do NOT match their
-//     prefixed id — so deriving id from path would be wrong.)
+//     the directory decides the EntityType. Filenames now equal ids across
+//     every directory, but keying on the id is still the right commitment:
+//     the id is the durable identity, so a future layout change cannot
+//     silently re-identify entities.
 //   - Parsing doubles as a conformance check. Anything malformed or dangling
 //     becomes a `problem` baked alongside the data; the build never throws on
 //     a broken instance, it reports. A broken instance is exactly when you
@@ -37,10 +38,11 @@ const outFile = resolve(process.argv[3] || join(VISUAL_DIR, "data", "snapshot.js
 
 const SERIALIZATION_VERSION = "v1";
 
-// Conformance rule for filename<->id. "slug-ok" (default): a bare-slug
-// filename that strips the entity-type prefix is accepted; only genuine
-// divergence is flagged. "strict": filename must equal id exactly.
-const FILENAME_RULE = process.env.KONSPEKT_FILENAME_RULE || "slug-ok";
+// Conformance rule for filename<->id. "strict" (default): the filename must
+// equal the id exactly, as SERIALIZATION.md requires. "slug-ok": also accepts
+// a bare-slug filename that strips the entity-type prefix — the pre-2026-07-19
+// convention, kept only for reading instances that have not been migrated.
+const FILENAME_RULE = process.env.KONSPEKT_FILENAME_RULE || "strict";
 
 const problems = [];
 const problem = (severity, code, message, ref) =>
