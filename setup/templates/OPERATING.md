@@ -25,7 +25,8 @@ own envelope.
 - **load** at session start — read `.konspekt/instance/` before any design or
   writing work, so the session never runs from stale context.
 - the maintainer **proposes** extractions into the working copy; it never
-  accepts on its own (everything it adds is `review: proposed`).
+  originates an acceptance (anything it proposes on its own judgment is
+  `review: proposed`).
 - a human command **carries acceptance** (`review: accepted`).
 - **persist** writes the working copy back to this repo.
 
