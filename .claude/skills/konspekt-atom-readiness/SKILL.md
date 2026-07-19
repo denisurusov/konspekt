@@ -29,7 +29,9 @@ forces the propose step. This skill is that forcing function.
 
 After each substantive exchange you MUST run the readiness check below. When an
 atom is ready you MUST venture it as a proposal **before moving on**. You MUST
-NOT accept your own ventures, and you MUST NOT persist without a human command.
+NOT accept your own ventures. You MUST NOT persist to the store without a human
+command — but when that command comes, what you write is `review: proposed`
+unless the human accepted the content itself.
 
 "Substantive" excludes pure acknowledgements, clarifying questions, and
 mechanical back-and-forth. A turn that decided something, named something,
@@ -79,9 +81,10 @@ or rejectable in one read.
 
 Good:
 
-> A good moment to sync this. Shipping `setup/` looks like: a new
-> `task-adoption-path` under `goal-portability`, producing `artifact-setup`,
-> with a `wp-setup-kit` waypoint. Want me to persist?
+> Syncing this as proposed: a new `task-adoption-path` under
+> `goal-portability`, producing `artifact-setup`, with a `wp-setup-kit`
+> waypoint. Confidence 0.7 on the waypoint — it may be routine rather than an
+> inflection. Review it whenever.
 
 Not good:
 
@@ -92,19 +95,32 @@ One venture can carry several proposals; present them together.
 
 ## Propose-accept discipline (non-negotiable)
 
-- Everything you venture is `review: proposed`. You never write `accepted`.
-- The transition to `accepted` is **exclusively human** — a command
-  (`sync` / `persist` / `sync_persist`) or an authority verb
-  (`pin` / `validate` / `refute` / `resolve` / `abandon` / `lift`), each of which
-  carries its own acceptance.
-- You do not persist until the human accepts. Persisting writes whatever review
-  state the working copy holds; acceptance happened in the conversation, before
-  persist.
-- When you persist accepted atoms, give each content-addressed provenance: a
-  verbatim both-sides source excerpt in `.konspekt/instance/sources/`, its git
-  blob SHA as `contentHash`, cited from the entity (see
-  `spec/architecture/SERIALIZATION.md`). Lighter provenance (conversation id +
-  timestamp) is for entities that predate the mechanism, not new ones.
+- Everything you venture is `review: proposed`, and every proposed atom MUST
+  carry `provenance.confidence` (0..1). It is the sort key for the human's
+  review queue; an atom without it defaults to the most-attention bucket.
+- You never *originate* an acceptance. You may write `review: accepted` in
+  exactly one case: transcribing an acceptance the human already gave in the
+  conversation — a command (`sync` / `persist` / `sync_persist`) or an authority
+  verb (`pin` / `validate` / `refute` / `resolve` / `abandon` / `lift`), each of
+  which carries its own acceptance. Writing `accepted` because you were
+  confident, or because a terse go-ahead seemed to cover it, is a violation.
+- **Review does not block persist.** Proposals persist as `proposed`
+  (`spec/architecture/REVIEW.md`). Do NOT hold ventures in the working copy
+  waiting for a blessing, and do NOT ask for acceptance in order to write them —
+  push them marked honestly and let them accumulate. The human dispositions a
+  batch when they choose to, sorted lowest-confidence-first. An instance that is
+  uniformly `accepted` is evidence this rule is being broken.
+- A terse go-ahead ("go", "do it", "proceed") authorizes you to *act* — to write
+  and persist. It is not an acceptance of the atom's content unless the human
+  addressed the content. When in doubt, persist it `proposed`; that costs the
+  human one queue entry, while a wrong `accepted` silently launders your
+  judgment as theirs.
+- Give every atom you persist — proposed or accepted — content-addressed
+  provenance: a verbatim both-sides source excerpt in
+  `.konspekt/instance/sources/`, its git blob SHA as `contentHash`, cited from
+  the entity (see `spec/architecture/SERIALIZATION.md`). Lighter provenance
+  (conversation id + timestamp) is for entities that predate the mechanism, not
+  new ones.
 
 ## Anti-patterns
 
@@ -114,6 +130,10 @@ One venture can carry several proposals; present them together.
   one to forget.
 - **Self-acceptance** — proposing and writing `accepted` in one breath because
   you are confident. Confidence triages attention; it never accepts.
+- **Acceptance-seeking** — asking "want me to persist?" and treating the reply
+  as a blessing of the content. It collapses propose and accept into one step,
+  which is the exact fusion this discipline exists to hold open, and it leaves
+  the review queue permanently empty.
 - **Narration** — turning every turn into "added X, ok?". Respect the bar.
 - **Vague venturing** — "want me to capture that?" without naming the entities. A
   proposal the human cannot accept or reject in one read is noise.
