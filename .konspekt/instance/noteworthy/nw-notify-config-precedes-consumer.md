@@ -33,5 +33,9 @@ behaviour, so the drift risk is bounded — unlike a spec that implementers
 conform to. Whether that distinction holds is the part this atom is least sure
 of.
 
-Proposed, not accepted: the ordering claim is a judgment about process that has
-not been validated by an actual watcher being written.
+**Disposition.** Accepted 2026-07-19, after the watcher was written — and the
+ordering claim was partly falsified in the interval. The event set in
+`notify.yml` went stale before any consumer had read it, because the authoring
+discipline changed underneath it (`nw-review-is-the-only-field-that-transitions`).
+Accepted as an accurate record of the reasoning and its outcome, not as a
+vindication of it: the 0.55 was, if anything, generous.
