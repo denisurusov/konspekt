@@ -61,7 +61,7 @@ version: 1
 # anything substantive requires following a link and authenticating.
 # See nw-notification-payload-is-reference-only.
 #
-# Caveat: only 30 of 87 entities currently carry sourceRef/contentHash. For the
+# Caveat: only 30 of 88 entities currently carry sourceRef/contentHash. For the
 # rest the source link will be absent; a watcher must tolerate that rather than
 # failing.
 # ---------------------------------------------------------------------------
@@ -78,21 +78,28 @@ version: 1
 
 # Types: node | concept | noteworthy | artifact | waypoint
 # Events: accepted | proposed | superseded
+#
+# `to` is addressed in whatever scheme the delivery channel uses. This instance
+# delivers by opening a GitHub issue, so `to` holds GitHub handles and they are
+# used as assignees. Email was tried first and abandoned: it needed an SMTP
+# account and a Google app password, which is infrastructure the rest of this
+# design deliberately avoids. The issue channel needs no secret at all — the
+# workflow's built-in GITHUB_TOKEN is enough.
 
 subscriptions:
   - types: [noteworthy]
     events: [accepted]
-    to: [denis.urusov@gmail.com]
+    to: [denisurusov]
     note: fires when a noteworthy atom is blessed, not when it is first proposed
 
 # Further examples — uncomment and edit.
 #
 #   - types: [waypoint]
 #     events: [accepted]
-#     to: [someone@example.com]
+#     to: [someone]
 #     note: waypoints are curated inflection points, so this is the lowest-volume feed
 #
 #   - types: [noteworthy, concept]
 #     events: [superseded]
-#     to: [someone@example.com]
+#     to: [someone]
 #     note: fires when a prior atom is corrected or replaced
