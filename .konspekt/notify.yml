@@ -1,0 +1,80 @@
+# konspekt notification subscriptions — this instance only.
+#
+# NOT part of the konspekt standard. A conformant reader ignores this file
+# entirely; an instance with no notifier is still complete, and the manual
+# re-upload probe still passes without it. It lives beside instance/ rather
+# than inside it because who wants an email is a fact about a consumer, not a
+# fact about the project — admitting it to the graph would require a Person
+# entity and drag assignment, ownership, and permissions in behind it.
+# See nw-subscriptions-are-config-not-graph.
+#
+# STATUS: no watcher implements this yet. The file is the contract a watcher
+# will be written against; nothing reads it today.
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Events
+#
+# Two, and only two. Not the authority-verb status transitions: status is
+# written at birth rather than transitioned, so a differ watching for
+# transitions would fire on almost nothing (nw-state-written-at-birth-not-
+# transitioned).
+#
+#   created    an `id` present in this commit and absent from its parent,
+#              with review: accepted.
+#
+#              Keyed on the `id` in front-matter, NEVER on the file path. A
+#              rename is a delete plus an add to a path-keyed differ, so the
+#              2026-07-19 filename migration would have fired ~50 spurious
+#              creations. Path is not identity (nw-rename-fires-as-creation).
+#
+#   superseded an entity acquired an inbound `supersedes` edge in
+#              edges/edges.md. Both entities stay in the graph; the superseded
+#              one is not deleted.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Payload
+#
+# Reference-only: entity id, entity type, event, commit URL, and a link to the
+# source excerpt under sources/. NEVER entity body text.
+#
+# The reason is an access asymmetry. Repo watchers hold repo access by
+# definition; an address in this file holds whatever the payload hands it. On a
+# private instance, anyone who can land a change here could subscribe an address
+# they control and receive project content without ever holding repo access —
+# this file would become an exfiltration path. Reference-only closes it: reading
+# anything substantive requires following a link and authenticating.
+# See nw-notification-payload-is-reference-only.
+#
+# Caveat: only 30 of 87 entities currently carry sourceRef/contentHash. For the
+# rest the source link will be absent; a watcher must tolerate that rather than
+# failing.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Subscriptions
+#
+# Type-level only. Id-level watches are deliberately unsupported: `supersedes`
+# keeps both entities in the graph, so a watch on a superseded id would fail
+# silently rather than erroring.
+#
+# Shape is CODEOWNERS-like — a match on entity type, and who to tell.
+# ---------------------------------------------------------------------------
+
+subscriptions: []
+
+# Example — uncomment and edit. Types: node | concept | noteworthy | artifact
+# | waypoint. Events: created | superseded.
+#
+# subscriptions:
+#   - types: [waypoint]
+#     events: [created]
+#     to: [someone@example.com]
+#     note: waypoints are curated inflection points, so this is the low-volume feed
+#
+#   - types: [noteworthy, concept]
+#     events: [superseded]
+#     to: [someone@example.com]
+#     note: fires when a prior atom is corrected or replaced
