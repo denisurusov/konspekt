@@ -8,30 +8,43 @@
 # entity and drag assignment, ownership, and permissions in behind it.
 # See nw-subscriptions-are-config-not-graph.
 #
-# STATUS: no watcher implements this yet. The file is the contract a watcher
-# will be written against; nothing reads it today.
+# Read by .github/workflows/konspekt-notify.yml on push to main.
 
 version: 1
 
 # ---------------------------------------------------------------------------
 # Events
 #
-# Two, and only two. Not the authority-verb status transitions: status is
-# written at birth rather than transitioned, so a differ watching for
-# transitions would fire on almost nothing (nw-state-written-at-birth-not-
-# transitioned).
+# Three. Not the authority-verb status transitions: status is written at birth
+# rather than transitioned, so a differ watching for those would fire on almost
+# nothing (nw-state-written-at-birth-not-transitioned).
 #
-#   created    an `id` present in this commit and absent from its parent,
-#              with review: accepted.
+#   accepted   an `id` whose review is `accepted` in this commit and was not
+#              accepted in its parent — whether because the entity is new and
+#              born accepted, or because a standing proposal was just blessed.
+#              This is the signal event.
 #
 #              Keyed on the `id` in front-matter, NEVER on the file path. A
 #              rename is a delete plus an add to a path-keyed differ, so the
 #              2026-07-19 filename migration would have fired ~50 spurious
 #              creations. Path is not identity (nw-rename-fires-as-creation).
 #
+#   proposed   an `id` that appears with review: proposed and was not present
+#              before. Optional — for anyone who wants to watch the review
+#              queue fill rather than only its outcomes.
+#
 #   superseded an entity acquired an inbound `supersedes` edge in
 #              edges/edges.md. Both entities stay in the graph; the superseded
 #              one is not deleted.
+#
+# NOTE on why `accepted` is not simply `created`. An earlier draft of this file
+# defined the signal as "new id, review: accepted", which assumed entities are
+# born accepted. That held until the atom-readiness skill was corrected to make
+# proposals actually persist as `proposed`; after that, an atom is born
+# `proposed` and accepted later by an edit, so a creation-keyed event would have
+# fired on nothing. `status` is written at birth and does not transition
+# (nw-state-written-at-birth-not-transitioned) — but `review` genuinely does,
+# and it is the only field that does.
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -63,16 +76,21 @@ version: 1
 # Shape is CODEOWNERS-like — a match on entity type, and who to tell.
 # ---------------------------------------------------------------------------
 
-subscriptions: []
+# Types: node | concept | noteworthy | artifact | waypoint
+# Events: accepted | proposed | superseded
 
-# Example — uncomment and edit. Types: node | concept | noteworthy | artifact
-# | waypoint. Events: created | superseded.
+subscriptions:
+  - types: [noteworthy]
+    events: [accepted]
+    to: [denis.urusov@gmail.com]
+    note: fires when a noteworthy atom is blessed, not when it is first proposed
+
+# Further examples — uncomment and edit.
 #
-# subscriptions:
 #   - types: [waypoint]
-#     events: [created]
+#     events: [accepted]
 #     to: [someone@example.com]
-#     note: waypoints are curated inflection points, so this is the low-volume feed
+#     note: waypoints are curated inflection points, so this is the lowest-volume feed
 #
 #   - types: [noteworthy, concept]
 #     events: [superseded]
