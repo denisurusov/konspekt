@@ -40,7 +40,7 @@ Rules:
 
 ## Edges
 
-`edges/edges.md` is a single table — `id | kind | from | to | weight` — where `from` / `to` are `type:id` refs. `provenance` and `review` are declared once at file level. Per-edge files are a valid v1 variant if the table grows unwieldy.
+`edges/edges.md` is a single table — `id | kind | from | to | weight | review` — where `from` / `to` are `type:id` refs. `provenance` is declared once at file level, as is the default `review`. The `review` column is a per-row **override**: empty means inherit the file-level default, and a value (e.g. `proposed`) applies to that edge alone — needed because an edge to a proposed entity must not inherit an `accepted` default. Every edge carries `review` in the model (`Edge extends Base`); the column only makes the per-row value expressible, so it is additive and remains v1. Per-edge files are a valid v1 variant if the table grows unwieldy.
 
 ## Sources
 
