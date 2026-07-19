@@ -84,6 +84,10 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-second-schemapractice | notes | node:task-second-implementer | noteworthy:nw-schema-behind-practice | |
 | e-not-trigger-birthstate | notes | node:task-trigger-transport | noteworthy:nw-state-written-at-birth-not-transitioned | |
 | e-not-provenance-birthstate | notes | node:task-provenance-model | noteworthy:nw-state-written-at-birth-not-transitioned | |
+| e-not-reconcile-census | notes | node:task-reconcile-schema | noteworthy:nw-konspekt-conforms-code-tracer-drifts | |
+| e-not-second-census | notes | node:task-second-implementer | noteworthy:nw-konspekt-conforms-code-tracer-drifts | |
+| e-not-serial-filenameid | notes | node:task-serialization-format | noteworthy:nw-filename-id-rule-conflict | |
+| e-not-realign-filenameid | notes | node:task-realign-instance | noteworthy:nw-filename-id-rule-conflict | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -123,3 +127,4 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-rel-twopillars-legible | relates | concept:concept-two-pillars | concept:concept-legible-over-defensible | 0.5 |
 | e-rel-twopillars-sep | relates | concept:concept-two-pillars | concept:concept-propose-accept-separation | 0.6 |
 | e-sup-birthstate-notifyevents | supersedes | noteworthy:nw-state-written-at-birth-not-transitioned | noteworthy:nw-notify-events-are-creation-and-supersedes | |
+| e-sup-census-schemapractice | supersedes | noteworthy:nw-konspekt-conforms-code-tracer-drifts | noteworthy:nw-schema-behind-practice | |
