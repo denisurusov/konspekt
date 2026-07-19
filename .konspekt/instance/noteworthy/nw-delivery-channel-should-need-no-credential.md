@@ -1,14 +1,14 @@
 ```yaml
 id: nw-delivery-channel-should-need-no-credential
 kind: decision
-review: proposed
+review: accepted
 provenance:
   sourceRef: f5574006e917c8fcc273c30849754ae48b0d984e
   contentHash: f5574006e917c8fcc273c30849754ae48b0d984e
   timestamp: 2026-07-19T23:05:00Z
   confidence: 0.7
 createdAt: 2026-07-19T23:05:00Z
-updatedAt: 2026-07-19T23:05:00Z
+updatedAt: 2026-07-19T23:20:00Z
 ```
 # Noteworthy: a notifier's delivery channel should require no credential
 
