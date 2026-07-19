@@ -24,6 +24,7 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-dec-repo-serial | decomposes | node:investigation-repo-structure | node:task-serialization-format | |
 | e-dec-repo-realign | decomposes | node:investigation-repo-structure | node:task-realign-instance | |
 | e-dec-repo-outcomes | decomposes | node:investigation-repo-structure | node:task-outcomes-node-type | |
+| e-dec-repo-layout | decomposes | node:investigation-repo-structure | node:task-instance-layout-regularity | |
 | e-dec-curated-oploop | decomposes | node:goal-curated-context | node:investigation-operating-loop | |
 | e-dec-follow-oploop | decomposes | node:goal-follow-thread | node:investigation-operating-loop | |
 | e-dec-oploop-ingestion | decomposes | node:investigation-operating-loop | node:task-ingestion-mode | |
@@ -81,6 +82,8 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-trigger-notifypayload | notes | node:task-trigger-transport | noteworthy:nw-notification-payload-is-reference-only | |
 | e-not-reconcile-schemapractice | notes | node:task-reconcile-schema | noteworthy:nw-schema-behind-practice | |
 | e-not-second-schemapractice | notes | node:task-second-implementer | noteworthy:nw-schema-behind-practice | |
+| e-not-trigger-birthstate | notes | node:task-trigger-transport | noteworthy:nw-state-written-at-birth-not-transitioned | |
+| e-not-provenance-birthstate | notes | node:task-provenance-model | noteworthy:nw-state-written-at-birth-not-transitioned | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
@@ -119,3 +122,4 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-rel-memorylayer-legible | relates | concept:concept-konspekt-vs-memory-layer | concept:concept-legible-over-defensible | 0.5 |
 | e-rel-twopillars-legible | relates | concept:concept-two-pillars | concept:concept-legible-over-defensible | 0.5 |
 | e-rel-twopillars-sep | relates | concept:concept-two-pillars | concept:concept-propose-accept-separation | 0.6 |
+| e-sup-birthstate-notifyevents | supersedes | noteworthy:nw-state-written-at-birth-not-transitioned | noteworthy:nw-notify-events-are-creation-and-supersedes | |
