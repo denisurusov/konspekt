@@ -95,6 +95,7 @@ proposal.
 | e-not-realign-renamed | notes | node:task-realign-instance | noteworthy:nw-filename-id-resolved-by-rename |  |  |
 | e-not-trigger-renamecreation | notes | node:task-trigger-transport | noteworthy:nw-rename-fires-as-creation |  |  |
 | e-not-trigger-notifyorder | notes | node:task-trigger-transport | noteworthy:nw-notify-config-precedes-consumer |  | proposed |
+| e-not-trigger-reviewtransitions | notes | node:task-trigger-transport | noteworthy:nw-review-is-the-only-field-that-transitions |  | proposed |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
