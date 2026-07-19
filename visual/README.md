@@ -63,19 +63,21 @@ always meaningful. Entities, edges, and problems are all id-sorted.
 
 ## A note on the filename/id rule
 
-The serialization spec says `id` equals the filename without `.md`. In practice
-the instance keeps **bare-slug filenames** for concepts, noteworthy, and
-artifacts (`connective-tissue.md` holds `concept-connective-tissue`), while
-nodes and waypoints match exactly. So the build **keys on the in-file `id`,
-never the path**, and the directory decides the entity type.
+The serialization spec says `id` equals the filename without `.md`, and since
+2026-07-19 the instance does too — concepts, noteworthy, and artifacts were
+renamed to carry their type prefix in the filename
+(`concepts/concept-connective-tissue.md`), matching nodes and waypoints, which
+always complied. See `nw-filename-id-resolved-by-rename`.
 
-The conformance check treats bare-slug filenames as an accepted convention and
-flags only genuine divergence (e.g. `platforms-absorb-capabilities.md` holding
-`nw-platforms-absorb`, where the slug isn't even a prefix-strip of the id). To
-enforce strict `filename == id` instead:
+The build still **keys on the in-file `id`, never the path**, and lets the
+directory decide the entity type. That is deliberate: the id is the durable
+identity, so a future layout change cannot silently re-identify entities.
+
+The conformance check therefore defaults to strict `filename == id`. To read an
+unmigrated instance that still uses bare-slug filenames, relax it:
 
 ```sh
-KONSPEKT_FILENAME_RULE=strict node build/snapshot.mjs
+KONSPEKT_FILENAME_RULE=slug-ok node build/snapshot.mjs
 ```
 
 ## Layout decisions
