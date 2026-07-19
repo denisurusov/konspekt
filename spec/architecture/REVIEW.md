@@ -8,9 +8,11 @@ Like triggers, the *interface* of review — the diff UI, the buttons, when the 
 
 One rule, and the rest follows from it:
 
-> The maintainer only ever writes `review: proposed`. The transition to `accepted` is **exclusively human**.
+> The maintainer never *originates* an acceptance. The transition to `accepted` is **exclusively human**.
 
 No confidence threshold, no entity-kind carve-out, no timeout, no machine path to `accepted`. A proposal becomes accepted only when a human says so — in the conversation, via prose acceptance or an authority verb (`../data-model/SPEC.md`), each of which carries its own acceptance.
+
+**What the maintainer may write.** Anything it proposes on its own judgment lands `review: proposed` — that is the whole of its discretion. It may nonetheless *write* `review: accepted`, in exactly one case: transcribing an acceptance a human has already given in the conversation, before the write. That is not the maintainer accepting; it is the maintainer recording that acceptance happened, which is why `TRANSPORT.md` can say an entity "is already `review: accepted` by the time it is written" without contradicting this rule. The invariant governs *authorship of the acceptance*, not which literal value the maintainer's write may contain. A maintainer that writes `accepted` without a human having said so has violated the invariant no matter how confident it was; a maintainer that writes `accepted` immediately after the human accepted has not.
 
 This is the rule that un-collapses propose→accept. Self-maintenance ingestion fuses proposing and accepting because one model does both in a single breath; the invariant re-separates them by forbidding the model the second move. The model may *organize* the human's review (below); it may never *substitute* for it.
 
