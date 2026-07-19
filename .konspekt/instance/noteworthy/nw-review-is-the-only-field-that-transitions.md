@@ -1,14 +1,14 @@
 ```yaml
 id: nw-review-is-the-only-field-that-transitions
 kind: fact
-review: proposed
+review: accepted
 provenance:
   sourceRef: fdead8230bc0ff2436ef21a3b224e35a12eb57b8
   contentHash: fdead8230bc0ff2436ef21a3b224e35a12eb57b8
   timestamp: 2026-07-19T22:15:00Z
   confidence: 0.8
 createdAt: 2026-07-19T22:15:00Z
-updatedAt: 2026-07-19T22:15:00Z
+updatedAt: 2026-07-19T22:40:00Z
 ```
 # Noteworthy: review is the only field that transitions, so it is the notifiable signal
 

@@ -1,14 +1,14 @@
 ```yaml
 id: nw-notify-config-precedes-consumer
 kind: decision
-review: proposed
+review: accepted
 provenance:
   sourceRef: 5234c7ba18c1c14c71aaf05c56d9475adfb96da0
   contentHash: 5234c7ba18c1c14c71aaf05c56d9475adfb96da0
   timestamp: 2026-07-19T21:10:00Z
   confidence: 0.55
 createdAt: 2026-07-19T21:10:00Z
-updatedAt: 2026-07-19T21:10:00Z
+updatedAt: 2026-07-19T22:40:00Z
 ```
 # Noteworthy: the notification config was written before any consumer of it
 
