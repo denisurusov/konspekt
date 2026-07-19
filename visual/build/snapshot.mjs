@@ -255,16 +255,16 @@ if (existsSync(edgesPath)) {
     const t = line.trim();
     if (!t.startsWith("|")) continue;
     const cells = t.split("|").slice(1, -1).map((c) => c.trim());
-    if (cells.length < 4) continue;
+    if (cells.length < 4) continue; // id|kind|from|to required; weight, review optional
     if (cells[0] === "id" || /^-+$/.test(cells[0])) continue; // header / divider
-    const [id, kind, from, to, weight] = cells;
+    const [id, kind, from, to, weight, review] = cells;
     const ref = (s) => {
       const ix = s.indexOf(":");
       return ix === -1 ? { type: null, id: s } : { type: s.slice(0, ix), id: s.slice(ix + 1) };
     };
     const edge = {
       id, kind, from: ref(from), to: ref(to),
-      review: defReview, conversationId: defConv,
+      review: review || defReview, conversationId: defConv,
     };
     if (weight !== undefined && weight !== "") edge.weight = Number(weight);
     edges.push(edge);
