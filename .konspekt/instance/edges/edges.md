@@ -96,6 +96,7 @@ proposal.
 | e-not-trigger-renamecreation | notes | node:task-trigger-transport | noteworthy:nw-rename-fires-as-creation |  |  |
 | e-not-trigger-notifyorder | notes | node:task-trigger-transport | noteworthy:nw-notify-config-precedes-consumer |  |  |
 | e-not-trigger-reviewtransitions | notes | node:task-trigger-transport | noteworthy:nw-review-is-the-only-field-that-transitions |  |  |
+| e-not-trigger-nocredential | notes | node:task-trigger-transport | noteworthy:nw-delivery-channel-should-need-no-credential |  | proposed |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
