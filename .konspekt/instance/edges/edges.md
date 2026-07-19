@@ -76,6 +76,11 @@ Single typed edge table (konspekt serialization v1). `from` / `to` are
 | e-not-review-skillpickup | notes | node:task-review-ergonomics | noteworthy:nw-skill-pickup-transport-bound | |
 | e-not-adoption-webmobile-seed | notes | node:task-adoption-path | noteworthy:nw-webmobile-seed-is-pointer-not-payload | |
 | e-not-adoption-whitepaper | notes | node:task-adoption-path | noteworthy:nw-whitepaper-non-normative | |
+| e-not-trigger-notifyconfig | notes | node:task-trigger-transport | noteworthy:nw-subscriptions-are-config-not-graph | |
+| e-not-trigger-notifyevents | notes | node:task-trigger-transport | noteworthy:nw-notify-events-are-creation-and-supersedes | |
+| e-not-trigger-notifypayload | notes | node:task-trigger-transport | noteworthy:nw-notification-payload-is-reference-only | |
+| e-not-reconcile-schemapractice | notes | node:task-reconcile-schema | noteworthy:nw-schema-behind-practice | |
+| e-not-second-schemapractice | notes | node:task-second-implementer | noteworthy:nw-schema-behind-practice | |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo | |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec | |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema | |
