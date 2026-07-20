@@ -38,6 +38,7 @@ proposal.
 | e-dec-oploop-provenance | decomposes | node:investigation-operating-loop | node:task-provenance-model |  |  |
 | e-dec-oploop-central | decomposes | node:investigation-operating-loop | node:task-central-service-binding |  |  |
 | e-dec-oploop-notifications | decomposes | node:investigation-operating-loop | node:task-portable-notifications |  |  |
+| e-dec-adoption-notifications | decomposes | node:task-adoption-path | node:task-portable-notifications |  |  |
 | e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state |  |  |
 | e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence |  |  |
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue |  |  |
@@ -102,6 +103,8 @@ proposal.
 | e-not-trigger-reviewtransitions | notes | node:task-trigger-transport | noteworthy:nw-review-is-the-only-field-that-transitions |  |  |
 | e-not-trigger-nocredential | notes | node:task-trigger-transport | noteworthy:nw-delivery-channel-should-need-no-credential |  |  |
 | e-not-notifications-nocredential | notes | node:task-portable-notifications | noteworthy:nw-delivery-channel-should-need-no-credential |  |  |
+| e-not-adoption-componentsnotstandard | notes | node:task-adoption-path | noteworthy:nw-components-are-not-the-standard |  | proposed |
+| e-not-notifications-componentsnotstandard | notes | node:task-portable-notifications | noteworthy:nw-components-are-not-the-standard |  | proposed |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
