@@ -108,6 +108,8 @@ proposal.
 | e-not-trigger-statustransitions | notes | node:task-trigger-transport | noteworthy:nw-node-status-does-transition |  | proposed |
 | e-not-notifications-statustransitions | notes | node:task-portable-notifications | noteworthy:nw-node-status-does-transition |  | proposed |
 | e-not-reconcile-statustransitions | notes | node:task-reconcile-schema | noteworthy:nw-node-status-does-transition |  | proposed |
+| e-not-trigger-payloadenums | notes | node:task-trigger-transport | noteworthy:nw-payload-reference-only-admits-enums |  | proposed |
+| e-not-notifications-payloadenums | notes | node:task-portable-notifications | noteworthy:nw-payload-reference-only-admits-enums |  | proposed |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
@@ -151,3 +153,4 @@ proposal.
 | e-sup-census-schemapractice | supersedes | noteworthy:nw-konspekt-conforms-code-tracer-drifts | noteworthy:nw-schema-behind-practice |  |  |
 | e-sup-renamed-filenameid | supersedes | noteworthy:nw-filename-id-resolved-by-rename | noteworthy:nw-filename-id-rule-conflict |  |  |
 | e-sup-statustransitions-birthstate | supersedes | noteworthy:nw-node-status-does-transition | noteworthy:nw-state-written-at-birth-not-transitioned |  | proposed |
+| e-sup-payloadenums-payloadref | supersedes | noteworthy:nw-payload-reference-only-admits-enums | noteworthy:nw-notification-payload-is-reference-only |  | proposed |
