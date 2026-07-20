@@ -19,9 +19,7 @@ version: 1
 # ---------------------------------------------------------------------------
 # Events
 #
-# Three. Not the authority-verb status transitions: status is written at birth
-# rather than transitioned, so a differ watching for those would fire on almost
-# nothing (nw-state-written-at-birth-not-transitioned).
+# Four.
 #
 #   accepted   an `id` whose review is `accepted` in this commit and was not
 #              accepted in its parent — whether because the entity is new and
@@ -40,6 +38,21 @@ version: 1
 #   superseded an entity acquired an inbound `supersedes` edge in
 #              edges/edges.md. Both entities stay in the graph; the superseded
 #              one is not deleted.
+#
+#   status_changed
+#              an entity's `status` differs from its value in the parent commit.
+#              Requires a predecessor: an entity BORN with a status has not
+#              transitioned, and does not fire.
+#
+#              This event was once excluded on the grounds that status is
+#              written at birth rather than transitioned. Git refutes that —
+#              e8731da creates four tasks `active`/`open`, 53b14ae flips one to
+#              `resolved` — so the exclusion rested on a sample too small to see
+#              the transitions (nw-node-status-does-transition). Rate observed
+#              in practice is a few per month: signal, not noise.
+#
+#              Orthogonal to `review`, not an alternative to it. One commit can
+#              both bless a proposal and move its status; both fire.
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -47,6 +60,11 @@ version: 1
 #
 # Reference-only: entity id, entity type, event, commit URL, and a link to the
 # source excerpt under sources/. NEVER entity body text.
+#
+# One admitted exception: `status_changed` carries the two enum values moved
+# between, because without them the event says nothing. Enum-valued metadata is
+# not body text and leaks no project content — `open -> resolved` is meaningless
+# to anyone without repo access (nw-payload-reference-only-admits-enums).
 #
 # The reason is an access asymmetry. Repo watchers hold repo access by
 # definition; an address in this file holds whatever the payload hands it. On a
@@ -71,7 +89,12 @@ version: 1
 # Shape is CODEOWNERS-like — a match on entity type, and who to tell.
 #
 # Types: node | concept | noteworthy | artifact | waypoint
-# Events: accepted | proposed | superseded
+# Events: accepted | proposed | superseded | status_changed
+#
+# `status_to` optionally narrows `status_changed` to specific destination
+# states, so a watcher can ask for "resolved" rather than every transition.
+# Absent means no narrowing. Ignored for every other event. It is named
+# `status_to` and not `to` because `to` is already the recipient list.
 #
 # `to` is addressed in whatever scheme the delivery channel uses. This binding
 # delivers by opening a GitHub issue, so `to` holds GitHub handles and they are
@@ -100,3 +123,9 @@ subscriptions: []
 #    events: [superseded]
 #    to: [your-github-handle]
 #    note: fires when a prior atom is corrected or replaced
+#
+#  - types: [node]
+#    events: [status_changed]
+#    status_to: [resolved, abandoned]
+#    to: [your-github-handle]
+#    note: work finishing or being dropped; drop status_to for every transition
