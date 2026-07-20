@@ -32,6 +32,10 @@ The split is deliberate: `instance/` is the portable unit — it is what moves
 between platforms; `OPERATING.md` / `NOTES.md` are local envelope, not part of
 the contract a second tool conforms to.
 
+The instance always lives at `.konspekt/instance`. That path is a constant of
+this binding, not a setting: this script is what writes it, so a tool that
+hardcodes it is conforming rather than assuming.
+
 ## Run it
 
 From the root of the repo you want to adopt konspekt (needs Node 18+). Copy this
@@ -57,6 +61,40 @@ present.
    konspekt spec. `.konspekt/OPERATING.md` is the policy you just adopted —
    edit it to taste; it is yours, not the standard's.
 
+## Optional components
+
+Scaffolding is create-or-refuse, so on its own it can never retrofit anything
+onto an instance that already exists. Components are the second mode: add-ons
+installed **into** a live `.konspekt/`.
+
+    node setup/init.mjs --list                 # what's available
+    node setup/init.mjs --add notify           # install one
+    node setup/init.mjs --add notify --force   # regenerate after editing the component
+    node setup/init.mjs --check                # report drift, write nothing
+
+Components are **not part of the standard**. A conformant instance with none of
+them is complete, and the manual re-upload probe passes without them. Each lives
+in `setup/components/<id>/` behind a `manifest.yml` declaring where its files go
+and what the install needs.
+
+Installed files are a **projection** of the component, never a tracking copy —
+edit the component and re-run with `--force`; `--check` tells you when the two
+have forked. The exception is a file marked `seed: true`, which is your config
+and is written exactly once.
+
+### Available
+
+- **`notify`** *(github binding)* — watches the instance and opens a GitHub issue
+  when an entity is accepted, proposed, or superseded. Subscriptions are empty
+  after install, so nothing fires until you name someone in
+  `.konspekt/notify.yml`. Delivery uses the built-in `GITHUB_TOKEN`; no secret,
+  no SMTP, no external service.
+
+  This component writes under `.github/workflows/`. GitHub Apps and MCP
+  connectors need an explicit `workflows` scope to **push** such a file — the
+  local write succeeds and the push is what gets rejected — so install it from a
+  terminal rather than through a connector. `--add` warns before it writes.
+
 ## Web & mobile
 
 The steps above seed a **repo**. If your project lives in a platform-native
@@ -71,5 +109,9 @@ repo and tells it to operate the loop. It is a pointer, not a payload: the
 knowledge stays in the repo; the seed only orients the conversation. Place it
 once in your slot (the file carries the paste-in text and the connector
 requirements), wire a GitHub connector, and the conversation is konspekt-enabled.
+
+Note that a connector-driven adoption cannot install the `notify` component, for
+the `workflows` scope reason above. That is a property of the connector, not of
+konspekt: the instance is fully functional without it.
 
 konspekt is open and impact-primary: adoption, even by copying, is the win.
