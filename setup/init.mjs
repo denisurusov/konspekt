@@ -94,6 +94,20 @@ function parseManifest(text) {
     const raw = lines[i];
     if (!raw.trim() || raw.trimStart().startsWith("#")) continue;
 
+    // `needs:` is a bare list of repo-relative paths the component calls at
+    // runtime. Distinct from `requires:`, which names install-time permissions.
+    if (/^needs:\s*$/.test(raw)) {
+      m.needs = [];
+      for (i++; i < lines.length; i++) {
+        const l = lines[i];
+        if (!l.trim() || l.trimStart().startsWith("#")) continue;
+        if (/^\S/.test(l)) { i--; break; }
+        const item = l.match(/^\s*-\s+(.+)$/);
+        if (item) m.needs.push(item[1].trim());
+      }
+      continue;
+    }
+
     if (/^files:\s*$/.test(raw)) {
       for (i++; i < lines.length; i++) {
         const l = lines[i];
@@ -181,6 +195,7 @@ if (has("--list")) {
     if (m.title) console.log(`    ${m.title}`);
     if (m.summary) console.log(`    ${m.summary}`);
     if (m.requires) console.log(`    requires: ${m.requires.join(", ")}`);
+    if (m.needs) console.log(`    needs: ${m.needs.join(", ")}`);
     console.log("");
   }
   console.log("Install with:  node setup/init.mjs --add <component>");
@@ -242,6 +257,21 @@ if (has("--add")) {
     console.error(`No konspekt instance at ${INSTANCE}/.`);
     console.error("Scaffold one first:  node setup/init.mjs");
     process.exit(1);
+  }
+
+  // A component may call repo files it does not ship — the conformance check
+  // shells out to lib/validate.mjs rather than vendoring a copy, because a
+  // vendored copy is the drift it exists to catch. Refuse rather than install
+  // a workflow that cannot run.
+  if (m.needs && m.needs.length) {
+    const missing = m.needs.filter((rel) => !existsSync(join(root, rel)));
+    if (missing.length) {
+      console.error(`Component "${id}" needs files this repo does not have:`);
+      for (const rel of missing) console.error(`  ${rel}`);
+      console.error("");
+      console.error("Vendor them alongside setup/ and try again.");
+      process.exit(1);
+    }
   }
 
   const force = has("--force");
