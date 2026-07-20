@@ -127,6 +127,10 @@ proposal.
 | e-prod-review-skill | produces | node:task-review-ergonomics | artifact:artifact-atom-readiness-skill |  |  |
 | e-prod-adoption-whitepaper | produces | node:task-adoption-path | artifact:artifact-whitepaper |  |  |
 | e-prod-layout-schemarecon | produces | node:task-instance-layout-regularity | artifact:artifact-schema-reconciliation |  | proposed |
+| e-prod-layout-conformance | produces | node:task-instance-layout-regularity | artifact:artifact-conformance-checker |  | proposed |
+| e-prod-adoption-conformance | produces | node:task-adoption-path | artifact:artifact-conformance-checker |  | proposed |
+| e-prod-adoption-components | produces | node:task-adoption-path | artifact:artifact-components |  | proposed |
+| e-prod-notifications-components | produces | node:task-portable-notifications | artifact:artifact-components |  | proposed |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread |  |  |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability |  |  |
 | e-mark-curated | marks | waypoint:wp-curated-goal | node:goal-curated-context |  |  |
@@ -140,6 +144,8 @@ proposal.
 | e-mark-delref-repo | marks | waypoint:wp-delete-reference | node:investigation-repo-structure |  |  |
 | e-mark-delref-oploop | marks | waypoint:wp-delete-reference | node:investigation-operating-loop |  |  |
 | e-mark-setupkit | marks | waypoint:wp-setup-kit | node:task-adoption-path |  |  |
+| e-mark-conformance-layout | marks | waypoint:wp-conformance-checker | node:task-instance-layout-regularity |  | proposed |
+| e-mark-conformance-adoption | marks | waypoint:wp-conformance-checker | node:task-adoption-path |  | proposed |
 | e-rel-conv-extstate | relates | concept:concept-goals-convergence | concept:concept-externalized-state | 0.6 |  |
 | e-rel-conv-conn | relates | concept:concept-goals-convergence | concept:concept-connective-tissue | 0.6 |  |
 | e-rel-legible-gap | relates | concept:concept-legible-over-defensible | concept:concept-second-implementer-gap | 0.5 |  |
