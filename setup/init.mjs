@@ -29,13 +29,17 @@
  * `seed: true` in the manifest, which is the adopter's config and is written
  * once.
  *
+ * Component sources resolve relative to THIS SCRIPT; install targets resolve
+ * relative to the CURRENT WORKING DIRECTORY. So installing into a second repo
+ * is: cd /path/to/other-repo && node /path/to/konspekt/setup/init.mjs --add X
+ *
  * Zero dependencies. The konspekt standard:
  * https://github.com/denisurusov/konspekt (spec/data-model, spec/architecture).
  */
 import {
   existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync,
 } from "node:fs";
-import { dirname, join, basename } from "node:path";
+import { dirname, join, basename, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
@@ -73,6 +77,9 @@ if (has("--help") || has("-h")) {
       "",
       "  node setup/init.mjs --check [<component>]",
       "      Report drift between installed files and component templates.",
+      "",
+      "  Targets resolve relative to the current directory, so run this from",
+      "  the root of the repo you are installing into.",
     ].join("\n")
   );
   process.exit(0);
@@ -94,8 +101,13 @@ function parseManifest(text) {
     const raw = lines[i];
     if (!raw.trim() || raw.trimStart().startsWith("#")) continue;
 
-    // `needs:` is a bare list of repo-relative paths the component calls at
-    // runtime. Distinct from `requires:`, which names install-time permissions.
+    // `needs:` is a bare list of repo-relative paths a component calls at
+    // runtime but does not ship. Distinct from `requires:`, which names
+    // install-time permissions. No shipped component uses it: `conformance`
+    // was the candidate and instead ships the checker as a projection, because
+    // a hand-vendored copy is the drift it exists to catch. Kept because the
+    // case is real for a component that must call something it cannot own —
+    // if nothing uses it by the third component, delete it.
     if (/^needs:\s*$/.test(raw)) {
       m.needs = [];
       for (i++; i < lines.length; i++) {
@@ -222,7 +234,7 @@ if (has("--check")) {
       const got = readFileSync(target, "utf8");
       if (want !== got) {
         console.log(`DRIFT  ${f.to}`);
-        console.log(`       differs from setup/components/${id}/${f.from}`);
+        console.log(`       differs from ${relative(root, join(m.dir, f.from)) || f.from}`);
         drifted++;
       }
     }
@@ -259,10 +271,8 @@ if (has("--add")) {
     process.exit(1);
   }
 
-  // A component may call repo files it does not ship — the conformance check
-  // shells out to lib/validate.mjs rather than vendoring a copy, because a
-  // vendored copy is the drift it exists to catch. Refuse rather than install
-  // a workflow that cannot run.
+  // Runtime prerequisites a component calls but does not ship. Refuse rather
+  // than install something that cannot run.
   if (m.needs && m.needs.length) {
     const missing = m.needs.filter((rel) => !existsSync(join(root, rel)));
     if (missing.length) {
