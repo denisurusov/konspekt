@@ -82,6 +82,13 @@ edit the component and re-run with `--force`; `--check` tells you when the two
 have forked. The exception is a file marked `seed: true`, which is your config
 and is written exactly once.
 
+Run `init.mjs` from the root of the **target** repo. Component sources resolve
+relative to the script, install targets relative to your working directory, so
+installing into another project looks like:
+
+    cd /path/to/other-repo
+    node /path/to/konspekt/setup/init.mjs --add conformance
+
 ### Available
 
 - **`notify`** *(github binding)* — watches the instance and opens a GitHub issue
@@ -94,6 +101,31 @@ and is written exactly once.
   connectors need an explicit `workflows` scope to **push** such a file — the
   local write succeeds and the push is what gets rejected — so install it from a
   terminal rather than through a connector. `--add` warns before it writes.
+
+- **`conformance`** *(github binding)* — runs the konspekt conformance checker on
+  every push and pull request that touches the instance, and fails the build on
+  errors. This is what turns "the instance drifted" from something noticed by
+  hand a month later into something a commit cannot land without.
+
+  It ships the checker with it: `lib/conformance.mjs` and `lib/validate.mjs` are
+  installed as projections of konspekt's own copies, so a second repo needs
+  nothing pre-vendored and `--check` catches it if the vendored copy is edited.
+  Same `workflows` scope caveat as above.
+
+  Fails on **errors only**. `edge-domain-range` and the status-vocabulary
+  warnings are the open subject of `spec/architecture/SCHEMA-RECONCILIATION.md`,
+  so gating on them would make the build permanently red over an undecided
+  question. Add `--strict` to the workflow's validate step when that closes.
+
+### Checking an instance without installing anything
+
+The checker takes an instance directory, so you can point konspekt's copy at any
+instance — no install, no files added to the target repo:
+
+    node lib/validate.mjs /path/to/other-repo/.konspekt/instance
+
+Add `--json` for machine-readable output, `--slug-ok` for an instance that
+predates the 2026-07-19 filename migration, `--quiet` for counts only.
 
 ## Web & mobile
 
@@ -110,8 +142,10 @@ knowledge stays in the repo; the seed only orients the conversation. Place it
 once in your slot (the file carries the paste-in text and the connector
 requirements), wire a GitHub connector, and the conversation is konspekt-enabled.
 
-Note that a connector-driven adoption cannot install the `notify` component, for
-the `workflows` scope reason above. That is a property of the connector, not of
-konspekt: the instance is fully functional without it.
+Note that a connector-driven adoption cannot **install** a component that writes
+under `.github/workflows/`, for the scope reason above. It can still maintain the
+component's templates under `setup/components/`, which is not a workflows path.
+That is a property of the connector, not of konspekt: the instance is fully
+functional without any component.
 
 konspekt is open and impact-primary: adoption, even by copying, is the win.
