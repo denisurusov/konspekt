@@ -1,0 +1,91 @@
+name: konspekt notify
+
+# Watches the konspekt instance for notifiable events and reports them by
+# opening a GitHub issue assigned to the subscribers.
+#
+# Subscriptions live in .konspekt/notify.yml, which is repo config rather than
+# graph state (nw-subscriptions-are-config-not-graph). The event set and the
+# reference-only payload rule are documented in that file; the matching logic is
+# .github/scripts/konspekt-notify.mjs and has no dependencies beyond git.
+#
+# No secrets required. Delivery uses the built-in GITHUB_TOKEN, so there is no
+# SMTP account, no app password, and no external service to keep alive. `to` in
+# notify.yml therefore holds GitHub handles, which become issue assignees.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".konspekt/instance/**"
+      - ".konspekt/notify.yml"
+  workflow_dispatch:
+    inputs:
+      before:
+        description: "base commit (defaults to HEAD~1)"
+        required: false
+      after:
+        description: "head commit (defaults to HEAD)"
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: konspekt-notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # events are computed by diffing two commits
+
+      - name: Resolve commit range
+        id: range
+        run: |
+          before="${{ github.event.inputs.before || github.event.before }}"
+          after="${{ github.event.inputs.after || github.sha }}"
+          # First push to a branch, or a force push, reports an all-zero base.
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            before="$(git rev-parse "$after"^ 2>/dev/null || echo "$after")"
+          fi
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+          echo "after=$after" >> "$GITHUB_OUTPUT"
+
+      - name: Compute events
+        id: events
+        run: |
+          node .github/scripts/konspekt-notify.mjs \
+            "${{ steps.range.outputs.before }}" \
+            "${{ steps.range.outputs.after }}" \
+            --body-file "$RUNNER_TEMP/body.txt"
+
+      - name: Open issue
+        if: steps.events.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "konspekt: ${{ steps.events.outputs.count }} event(s)" \
+            --body-file "$RUNNER_TEMP/body.txt" \
+            --assignee "${{ steps.events.outputs.recipients }}"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### konspekt notify" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Range: \`${{ steps.range.outputs.before }}\` -> \`${{ steps.range.outputs.after }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Matched events: **${{ steps.events.outputs.count }}**" >> "$GITHUB_STEP_SUMMARY"
+          if [ -s "$RUNNER_TEMP/body.txt" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/body.txt" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -1,0 +1,102 @@
+# konspekt notification subscriptions — this instance only.
+#
+# NOT part of the konspekt standard. A conformant reader ignores this file
+# entirely; an instance with no notifier is still complete, and the manual
+# re-upload probe still passes without it. It lives beside instance/ rather
+# than inside it because who wants an email is a fact about a consumer, not a
+# fact about the project — admitting it to the graph would require a Person
+# entity and drag assignment, ownership, and permissions in behind it.
+# See nw-subscriptions-are-config-not-graph.
+#
+# Read by .github/workflows/konspekt-notify.yml on push to main.
+#
+# Seeded by `node setup/init.mjs --add notify`. This is the one file in the
+# component the installer will NOT overwrite on re-run: it is your config, not
+# a projection of the template.
+
+version: 1
+
+# ---------------------------------------------------------------------------
+# Events
+#
+# Three. Not the authority-verb status transitions: status is written at birth
+# rather than transitioned, so a differ watching for those would fire on almost
+# nothing (nw-state-written-at-birth-not-transitioned).
+#
+#   accepted   an `id` whose review is `accepted` in this commit and was not
+#              accepted in its parent — whether because the entity is new and
+#              born accepted, or because a standing proposal was just blessed.
+#              This is the signal event.
+#
+#              Keyed on the `id` in front-matter, NEVER on the file path. A
+#              rename is a delete plus an add to a path-keyed differ, so a
+#              filename migration would fire a spurious creation for every
+#              entity moved. Path is not identity (nw-rename-fires-as-creation).
+#
+#   proposed   an `id` that appears with review: proposed and was not present
+#              before. Optional — for anyone who wants to watch the review
+#              queue fill rather than only its outcomes.
+#
+#   superseded an entity acquired an inbound `supersedes` edge in
+#              edges/edges.md. Both entities stay in the graph; the superseded
+#              one is not deleted.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Payload
+#
+# Reference-only: entity id, entity type, event, commit URL, and a link to the
+# source excerpt under sources/. NEVER entity body text.
+#
+# The reason is an access asymmetry. Repo watchers hold repo access by
+# definition; an address in this file holds whatever the payload hands it. On a
+# private instance, anyone who can land a change here could subscribe an address
+# they control and receive project content without ever holding repo access —
+# this file would become an exfiltration path. Reference-only closes it: reading
+# anything substantive requires following a link and authenticating.
+# See nw-notification-payload-is-reference-only.
+#
+# Caveat: entities predating the content-addressed provenance mechanism carry no
+# sourceRef, so the source link will be absent for them. A watcher must tolerate
+# that rather than failing.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Subscriptions
+#
+# Type-level only. Id-level watches are deliberately unsupported: `supersedes`
+# keeps both entities in the graph, so a watch on a superseded id would fail
+# silently rather than erroring.
+#
+# Shape is CODEOWNERS-like — a match on entity type, and who to tell.
+#
+# Types: node | concept | noteworthy | artifact | waypoint
+# Events: accepted | proposed | superseded
+#
+# `to` is addressed in whatever scheme the delivery channel uses. This binding
+# delivers by opening a GitHub issue, so `to` holds GitHub handles and they are
+# used as assignees. Email was tried first and abandoned: it needed an SMTP
+# account and a Google app password, which is infrastructure the rest of this
+# design deliberately avoids. The issue channel needs no secret at all — the
+# workflow's built-in GITHUB_TOKEN is enough.
+#
+# EMPTY BY DEFAULT. No subscription means no notification — installing the
+# component is not the same as opting a person into it. Uncomment and edit.
+# ---------------------------------------------------------------------------
+
+subscriptions: []
+
+#  - types: [noteworthy]
+#    events: [accepted]
+#    to: [your-github-handle]
+#    note: fires when a noteworthy atom is blessed, not when it is first proposed
+#
+#  - types: [waypoint]
+#    events: [accepted]
+#    to: [your-github-handle]
+#    note: waypoints are curated inflection points, so this is the lowest-volume feed
+#
+#  - types: [noteworthy, concept]
+#    events: [superseded]
+#    to: [your-github-handle]
+#    note: fires when a prior atom is corrected or replaced
