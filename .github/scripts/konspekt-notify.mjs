@@ -13,8 +13,9 @@
 //   - Events are keyed on the in-file `id`, NEVER on the file path. A rename
 //     is a delete plus an add to a path-keyed differ; the 2026-07-19 migration
 //     would have fired ~50 spurious events (nw-rename-fires-as-creation).
-//   - Payloads are reference-only: id, type, event, commit URL, source link.
-//     Never entity body text (nw-notification-payload-is-reference-only).
+//   - Payloads are reference-only: id, type, event, commit URL, source link,
+//     and — for status_changed — the enum values moved between. Never entity
+//     body text (nw-payload-reference-only-admits-enums).
 //   - Unknown/absent config is not an error. No notify.yml, or no matching
 //     subscription, means zero events and a clean exit.
 //
@@ -57,7 +58,7 @@ const git = (...args) => {
 
 // ---------- front-matter: only the fields the notifier needs ----------
 //
-// Deliberately not a YAML parser. It reads `id`, `review`, and
+// Deliberately not a YAML parser. It reads `id`, `review`, `status`, and
 // `provenance.sourceRef` out of the fenced block and ignores everything else,
 // so it cannot break on front-matter shapes it was not designed for.
 
@@ -73,7 +74,12 @@ function readEntity(text) {
   };
   const id = scalar("id", false);
   if (!id) return null;
-  return { id, review: scalar("review", false), sourceRef: scalar("sourceRef", true) };
+  return {
+    id,
+    review: scalar("review", false),
+    status: scalar("status", false),
+    sourceRef: scalar("sourceRef", true),
+  };
 }
 
 // ---------- read a whole instance at one commit, keyed by id ----------
@@ -172,6 +178,21 @@ for (const [id, e] of after) {
   } else if (e.review === "proposed" && !prev) {
     events.push({ event: "proposed", id, type: e.type, sourceRef: e.sourceRef });
   }
+
+  // Status transitions are orthogonal to review, not an alternative to it: one
+  // commit can both bless a proposal and move its status, and both are events.
+  // Requires a predecessor — an entity born with a status has not transitioned
+  // (nw-node-status-does-transition).
+  if (prev && e.status && prev.status && e.status !== prev.status) {
+    events.push({
+      event: "status_changed",
+      id,
+      type: e.type,
+      sourceRef: e.sourceRef,
+      statusFrom: prev.status,
+      statusTo: e.status,
+    });
+  }
 }
 
 for (const id of supAfter) {
@@ -189,6 +210,11 @@ for (const ev of events) {
   for (const s of subs) {
     if (!s.types.includes(ev.type)) continue;
     if (!s.events.includes(ev.event)) continue;
+    // `status_to` narrows status_changed to specific destination states, so a
+    // watcher can ask for "resolved" rather than every transition. Absent means
+    // no narrowing. Ignored for every other event kind. Named `status_to`
+    // because `to` is already the recipient list.
+    if (ev.event === "status_changed" && s.status_to && !s.status_to.includes(ev.statusTo)) continue;
     for (const addr of s.to) recipients.add(addr);
   }
   if (recipients.size) matched.push({ ...ev, to: [...recipients].sort() });
@@ -206,7 +232,8 @@ const sourceUrl = (ref) =>
 
 const lines = [];
 for (const ev of matched) {
-  lines.push(`${ev.event}: ${ev.id} (${ev.type})`);
+  const detail = ev.event === "status_changed" ? ` ${ev.statusFrom} -> ${ev.statusTo}` : "";
+  lines.push(`${ev.event}: ${ev.id} (${ev.type})${detail}`);
   const eu = entityUrl(ev.id);
   if (eu) lines.push(`  entity: ${eu}`);
   const su = sourceUrl(ev.sourceRef);
