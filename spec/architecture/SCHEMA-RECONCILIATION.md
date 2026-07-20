@@ -77,23 +77,36 @@ Captured as `nw-konspekt-conforms-code-tracer-drifts`, which supersedes
 | R7 | **unaffected** | No-change item |
 | R8 | **survives, strengthened** | A validator is what would have caught the divergence, and equally what would have caught this draft's bad premise. It is the only item that improves under the inversion |
 
-## A separate correction to the census
+## A separate correction to the census, now settled
 
 The 2026-07-19 diff asserted that no `resolved`, `refuted`, `lifted`, or
-`abandoned` status appears anywhere, and drew from that the conclusion that the
-authority-verb transitions "appear never to have occurred in practice."
+`abandoned` status appears anywhere, and concluded that the authority-verb
+transitions "appear never to have occurred in practice."
 
-This is false for nodes. A read of `.konspekt/instance/nodes/task/` on
-2026-07-20 found seven tasks carrying `status: resolved` —
-`task-provenance-model`, `task-realign-instance`, `task-reconcile-schema`,
-`task-reconciliation`, `task-review-ergonomics`, `task-serialization-format`,
-`task-trigger-transport`.
+That broad claim was already conceded on 2026-07-19 by
+`nw-state-written-at-birth-not-transitioned`, which named two resolved tasks.
+It retained a narrower one: those nodes carry `createdAt == updatedAt`, so they
+were *authored* resolved rather than moved from an earlier state.
 
-The narrower claim — that non-node entity types carry `active` as filler because
-they have no status vocabulary — is unaffected, and R2 rests on that narrower
-claim. But `nw-state-written-at-birth-not-transitioned` was derived from the
-broad version, and the notifier's event set was designed around it. That chain
-should be re-checked before it is built on further.
+The narrower claim is also false, and git settles it rather than inferring from
+timestamps. Commit `e8731da` (2026-06-21) creates four operating-loop tasks and
+records their birth states in its own message — "Ingestion + reconcile active;
+trigger-transport + review open." Commit `53b14ae` (2026-06-22) — "Flip
+task-reconciliation to resolved with an outcome summary." That is
+`active → resolved`, plus two `open → resolved` in the same set. Seven tasks are
+resolved, not two, and four have `updatedAt > createdAt`.
+
+Recorded as `nw-node-status-does-transition`, superseding
+`nw-state-written-at-birth-not-transitioned`.
+
+Two things follow. R2 rests on the *non-node* filler claim and is unaffected.
+But the notifier's three-event set was justified by the void premise and is now
+unsupported — tracked against `task-portable-notifications`.
+
+**And note what this episode is.** The same claim was asserted three times from
+progressively larger but still partial reads: a summary diff, then two node
+files, then seven plus git log. Each pass narrowed the claim instead of checking
+it. That is R8 argued in evidence rather than in principle.
 
 ## What closing this requires
 
