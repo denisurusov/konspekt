@@ -21,6 +21,7 @@ proposal.
 | e-dec-port-second | decomposes | node:goal-portability | node:task-second-implementer |  |  |
 | e-dec-port-license | decomposes | node:goal-portability | node:task-license |  |  |
 | e-dec-port-adoption | decomposes | node:goal-portability | node:task-adoption-path |  |  |
+| e-dec-port-notifications | decomposes | node:goal-portability | node:task-portable-notifications |  |  |
 | e-dec-follow-valid | decomposes | node:goal-follow-thread | node:investigation-validation |  |  |
 | e-dec-curated-valid | decomposes | node:goal-curated-context | node:investigation-validation |  |  |
 | e-dec-repo-reconcile | decomposes | node:investigation-repo-structure | node:task-reconcile-schema |  |  |
@@ -36,6 +37,7 @@ proposal.
 | e-dec-oploop-review | decomposes | node:investigation-operating-loop | node:task-review-ergonomics |  |  |
 | e-dec-oploop-provenance | decomposes | node:investigation-operating-loop | node:task-provenance-model |  |  |
 | e-dec-oploop-central | decomposes | node:investigation-operating-loop | node:task-central-service-binding |  |  |
+| e-dec-oploop-notifications | decomposes | node:investigation-operating-loop | node:task-portable-notifications |  |  |
 | e-men-follow-extstate | mentions | node:goal-follow-thread | concept:concept-externalized-state |  |  |
 | e-men-follow-conv | mentions | node:goal-follow-thread | concept:concept-goals-convergence |  |  |
 | e-men-port-conn | mentions | node:goal-portability | concept:concept-connective-tissue |  |  |
@@ -55,6 +57,8 @@ proposal.
 | e-men-provenance-caprov | mentions | node:task-provenance-model | concept:concept-content-addressed-provenance |  |  |
 | e-men-comp-memorylayer | mentions | node:investigation-competition | concept:concept-konspekt-vs-memory-layer |  |  |
 | e-men-repo-twopillars | mentions | node:investigation-repo-structure | concept:concept-two-pillars |  |  |
+| e-men-adoption-upgrade | mentions | node:task-adoption-path | concept:concept-instance-upgradeability |  |  |
+| e-men-notifications-upgrade | mentions | node:task-portable-notifications | concept:concept-instance-upgradeability |  |  |
 | e-not-valid-hyp | notes | node:investigation-validation | noteworthy:nw-hypotheses-not-proof |  |  |
 | e-not-valid-vocab | notes | node:investigation-validation | noteworthy:nw-validation-is-vocabulary |  |  |
 | e-not-valid-curated | notes | node:investigation-validation | noteworthy:nw-curated-context-accuracy |  |  |
@@ -96,7 +100,8 @@ proposal.
 | e-not-trigger-renamecreation | notes | node:task-trigger-transport | noteworthy:nw-rename-fires-as-creation |  |  |
 | e-not-trigger-notifyorder | notes | node:task-trigger-transport | noteworthy:nw-notify-config-precedes-consumer |  |  |
 | e-not-trigger-reviewtransitions | notes | node:task-trigger-transport | noteworthy:nw-review-is-the-only-field-that-transitions |  |  |
-| e-not-trigger-nocredential | notes | node:task-trigger-transport | noteworthy:nw-delivery-channel-should-need-no-credential |  | proposed |
+| e-not-trigger-nocredential | notes | node:task-trigger-transport | noteworthy:nw-delivery-channel-should-need-no-credential |  |  |
+| e-not-notifications-nocredential | notes | node:task-portable-notifications | noteworthy:nw-delivery-channel-should-need-no-credential |  |  |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
