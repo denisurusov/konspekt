@@ -105,6 +105,9 @@ proposal.
 | e-not-notifications-nocredential | notes | node:task-portable-notifications | noteworthy:nw-delivery-channel-should-need-no-credential |  |  |
 | e-not-adoption-componentsnotstandard | notes | node:task-adoption-path | noteworthy:nw-components-are-not-the-standard |  | proposed |
 | e-not-notifications-componentsnotstandard | notes | node:task-portable-notifications | noteworthy:nw-components-are-not-the-standard |  | proposed |
+| e-not-trigger-statustransitions | notes | node:task-trigger-transport | noteworthy:nw-node-status-does-transition |  | proposed |
+| e-not-notifications-statustransitions | notes | node:task-portable-notifications | noteworthy:nw-node-status-does-transition |  | proposed |
+| e-not-reconcile-statustransitions | notes | node:task-reconcile-schema | noteworthy:nw-node-status-does-transition |  | proposed |
 | e-prod-repo-repo | produces | node:investigation-repo-structure | artifact:artifact-repo |  |  |
 | e-prod-reconcile-spec | produces | node:task-reconcile-schema | artifact:artifact-spec |  |  |
 | e-prod-reconcile-schema | produces | node:task-reconcile-schema | artifact:artifact-schema |  |  |
@@ -121,6 +124,7 @@ proposal.
 | e-prod-adoption-webmobile-seed | produces | node:task-adoption-path | artifact:artifact-webmobile-seed |  |  |
 | e-prod-review-skill | produces | node:task-review-ergonomics | artifact:artifact-atom-readiness-skill |  |  |
 | e-prod-adoption-whitepaper | produces | node:task-adoption-path | artifact:artifact-whitepaper |  |  |
+| e-prod-layout-schemarecon | produces | node:task-instance-layout-regularity | artifact:artifact-schema-reconciliation |  | proposed |
 | e-mark-frame-follow | marks | waypoint:wp-frame-goals | node:goal-follow-thread |  |  |
 | e-mark-frame-port | marks | waypoint:wp-frame-goals | node:goal-portability |  |  |
 | e-mark-curated | marks | waypoint:wp-curated-goal | node:goal-curated-context |  |  |
@@ -146,3 +150,4 @@ proposal.
 | e-sup-birthstate-notifyevents | supersedes | noteworthy:nw-state-written-at-birth-not-transitioned | noteworthy:nw-notify-events-are-creation-and-supersedes |  |  |
 | e-sup-census-schemapractice | supersedes | noteworthy:nw-konspekt-conforms-code-tracer-drifts | noteworthy:nw-schema-behind-practice |  |  |
 | e-sup-renamed-filenameid | supersedes | noteworthy:nw-filename-id-resolved-by-rename | noteworthy:nw-filename-id-rule-conflict |  |  |
+| e-sup-statustransitions-birthstate | supersedes | noteworthy:nw-node-status-does-transition | noteworthy:nw-state-written-at-birth-not-transitioned |  | proposed |
