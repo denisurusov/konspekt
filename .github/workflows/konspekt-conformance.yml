@@ -1,0 +1,66 @@
+name: konspekt conformance
+
+# Checks the konspekt instance against spec/data-model/schema.ts and
+# spec/architecture/SERIALIZATION.md on every push and pull request that
+# touches it.
+#
+# Fails on ERRORS only — dangling edges, duplicate ids, broken provenance.
+# Warnings and info are reported in the job summary but do not fail the build,
+# because two of the warning classes (edge-domain-range, status vocabularies)
+# are the open subject of the schema reconciliation rather than settled
+# defects. Add --strict to the validate step to gate on warnings as well.
+#
+# No secrets, no network, no dependencies: the checker is Node-only and pure.
+#
+# Installed by `node setup/init.mjs --add conformance`. Do not edit in place —
+# edit setup/components/conformance/workflow.yml and re-run with --force.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".konspekt/instance/**"
+      - "lib/**"
+      - "spec/**"
+  pull_request:
+    paths:
+      - ".konspekt/instance/**"
+      - "lib/**"
+      - "spec/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: konspekt-conformance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate instance
+        id: validate
+        run: |
+          set -o pipefail
+          node lib/validate.mjs .konspekt/instance | tee "$RUNNER_TEMP/report.txt"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### konspekt conformance" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -s "$RUNNER_TEMP/report.txt" ]; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/report.txt" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No report produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
