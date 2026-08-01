@@ -7,8 +7,9 @@ summary:
   origin: machine
   pinned: false
   updatedAt: 2026-06-21T13:00:00Z
+personas: [engineer]
 createdAt: 2026-06-21T13:00:00Z
-updatedAt: 2026-06-21T13:00:00Z
+updatedAt: 2026-08-01T21:31:00Z
 ```
 # konspekt
 
