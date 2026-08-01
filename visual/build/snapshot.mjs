@@ -17,7 +17,8 @@
 //   - Zero dependencies. Node only.
 //   - The snapshot is a *pure function of the instance*. No wall-clock
 //     timestamp is baked in, so re-running on an unchanged instance produces a
-//     byte-identical file and the git diff stays meaningful.
+//     byte-identical file and the git diff stays meaningful. Persona registries
+//     are read from the repo spec, which is fixed input, so determinism holds.
 //
 // Usage:  node build/snapshot.mjs [instanceDir] [outFile]
 //   defaults: instanceDir = ../.konspekt/instance (resolved from repo root)
@@ -28,6 +29,7 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { loadInstance, summarize } from "../../lib/conformance.mjs";
+import { loadActivePersonas } from "../../lib/load-personas.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const VISUAL_DIR = resolve(__dirname, "..");
@@ -41,13 +43,20 @@ const outFile = resolve(process.argv[3] || join(VISUAL_DIR, "data", "snapshot.js
 // instance that has not been migrated.
 const FILENAME_RULE = process.env.KONSPEKT_FILENAME_RULE || "strict";
 
-const result = loadInstance(instanceDir, { filenameRule: FILENAME_RULE });
+// Persona layers the instance activates, resolved from the repo spec. Missing
+// registries warn and degrade to core; the checker records the same as info.
+const personas = await loadActivePersonas(instanceDir, join(REPO_ROOT, "spec", "personas"), {
+  warn: (m) => console.error(`warning: ${m}`),
+});
+
+const result = loadInstance(instanceDir, { filenameRule: FILENAME_RULE, personas });
 
 const snapshot = {
   meta: {
     tool: "konspekt-visual/build/snapshot.mjs",
     serializationVersion: result.meta.serializationVersion,
     filenameRule: result.meta.filenameRule,
+    personas: result.meta.personas,
     counts: result.meta.counts,
     // content digest, not a clock — keeps the file a pure function of input
     contentHash: "",
