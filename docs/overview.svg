@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" viewBox="0 0 960 817" role="img" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" viewBox="0 0 960 947" role="img" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
 <title>konspekt — how it works</title>
 <desc>konspekt keeps a portable, human-readable record of a project's evolving state across generative-AI conversations and platforms: a typed knowledge graph on GitHub, mutated by human-authority verbs through a propose-accept loop, where every atom cites a verbatim, content-addressed source excerpt.</desc>
 <style>
@@ -22,7 +22,7 @@
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   a{cursor:pointer}
 </style>
-<rect x="0" y="0" width="960" height="817" rx="0" fill="var(--page)"/>
+<rect x="0" y="0" width="960" height="947" rx="0" fill="var(--page)"/>
 <rect x="40" y="30" width="880" height="104" rx="14" fill="var(--accent-bg)" stroke="var(--accent-border)" stroke-width="1"/>
 <rect x="62" y="52" width="4" height="60" rx="2" fill="var(--accent)"/>
 <text x="82" y="60" class="accent h" font-size="13" letter-spacing="1.4">KONSPEKT</text>
@@ -107,6 +107,23 @@
 <text x="679.2" y="572.0" text-anchor="middle" class="secondary mono" font-size="12">sources/</text>
 <rect x="723.0" y="557.0" width="109.6" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
 <text x="777.8" y="572.0" text-anchor="middle" class="secondary mono" font-size="12">atomic commit</text>
+<rect x="40" y="610" width="880" height="108" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1"/>
+<rect x="60" y="632" width="9" height="9" rx="2.5" fill="var(--accent)"/>
+<text x="78" y="640" class="primary m" font-size="15.5">Persona layers — extensions</text>
+<text x="900" y="640" text-anchor="end" class="muted mono" font-size="12">05</text>
+<text x="60" y="664" class="secondary" font-size="13">Optional layers over the persona-agnostic core, adding subtypes, edge kinds, and provenance channels</text>
+<text x="60" y="683" class="secondary" font-size="13">through generic hooks — never mutating core enums. The first is engineer: ASR, ADR, executed commands.</text>
+<rect x="60.0" y="694.0" width="37.6" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
+<text x="78.8" y="709.0" text-anchor="middle" class="secondary mono" font-size="12">asr</text>
+<rect x="104.6" y="694.0" width="37.6" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
+<text x="123.4" y="709.0" text-anchor="middle" class="secondary mono" font-size="12">adr</text>
+<rect x="149.2" y="694.0" width="59.2" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
+<text x="178.8" y="709.0" text-anchor="middle" class="secondary mono" font-size="12">drives</text>
+<rect x="215.4" y="694.0" width="73.6" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
+<text x="252.2" y="709.0" text-anchor="middle" class="secondary mono" font-size="12">executed</text>
+<rect x="296.0" y="694.0" width="80.8" height="21" rx="5" fill="var(--tag-bg)" stroke="var(--border)" stroke-width="1"/>
+<text x="336.4" y="709.0" text-anchor="middle" class="secondary mono" font-size="12">commands/</text>
+<g transform="translate(0,130)">
 <rect x="40" y="610" width="880" height="92" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1"/>
 <rect x="60" y="632" width="9" height="9" rx="2.5" fill="var(--accent)"/>
 <text x="78" y="640" class="primary m" font-size="15.5">Traceability chain</text>
@@ -142,4 +159,5 @@
 <a href="https://github.com/denisurusov/konspekt/tree/main/visual" target="_blank">
 <text x="324.9" y="784.0" class="accent" font-size="12.5" text-decoration="underline">konspekt/visual</text>
 </a>
+</g>
 </svg>
