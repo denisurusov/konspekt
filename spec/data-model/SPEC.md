@@ -30,7 +30,7 @@ One underlying decision, up to three representations, with a single rule for eac
 
 ## Edges
 
-One typed table; `from` / `to` are `EntityRef`s; `weight` is meaningful only for `relates`.
+One typed table; `from` / `to` are `EntityRef`s — or, for a persona layer that defines one, a content-addressed provenance ref such as `command:<hash>` (see `../personas/`); `weight` is meaningful only for `relates`.
 
 - `decomposes` — node → node (goal tree)
 - `mentions` — node → concept
@@ -75,3 +75,14 @@ These are **authority verbs** — the override/guarantee moments, and precisely 
 ## Note on concept relationships
 
 Concept-to-concept edges exist but are **untyped** (kind `relates`), carrying an optional numeric `weight` instead of a relationship ontology — deliberately avoiding a philosophical rabbit hole. `supersedes` is the one *truth-changing* relation promoted to its own kind; evidential relations ("supports") are deliberately **not** typed, for the same reason.
+
+
+## Extension: persona layers
+
+The core above is **persona-agnostic**: it names no working role and its enums (`NodeType`, `WaypointKind`, `EdgeKind`, …) are closed. A **persona layer** extends the model through three generic hooks, so a layer adds vocabulary without the core carrying any layer-specific value:
+
+- **`subtype`** — an optional discriminator on any entity. The core recognizes the field; a layer defines its values (the engineer layer's `asr` on a Concept, `adr` on a `decision` Waypoint).
+- **Provenance-ref edge endpoints** — an edge `from`/`to` may address a content-addressed provenance file (`<channel>:<contentHash>`) instead of an entity, resolved the way `sources/` is and never entified. A layer defines the channel (e.g. `command`).
+- **`personas` activation** — a `Project` lists the layers an instance turns on (`personas: [engineer]`). Absent the list, the core is unchanged and every existing instance stays conformant.
+
+Layer vocabularies live in `../personas/<layer>/`, declared in a registry the conformance checker merges only when the instance activates the layer. The first is `engineer/`, adding ASR, ADR, executed-command provenance, and the `drives` and `executed` edge kinds.
