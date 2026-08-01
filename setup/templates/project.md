@@ -6,6 +6,7 @@ summary:
   origin: human
   pinned: false
   updatedAt: {{TS}}
+{{PERSONAS}}
 createdAt: {{TS}}
 updatedAt: {{TS}}
 ```

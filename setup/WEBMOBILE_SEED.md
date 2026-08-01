@@ -31,6 +31,10 @@ container, by cloning the repo into it for a full local pass):
 - `.claude/skills/` — the maintainer skills, especially `konspekt-atom-readiness`
 - `spec/data-model/` — the entities, review states, and edge kinds you propose against
 - `spec/architecture/` — reconciliation, serialization, transport, review
+- `spec/personas/` — optional layers; if `.konspekt/instance/project.md` lists
+  `personas`, read `spec/personas/<name>/AGENTS.md` from the konspekt standard
+  (github.com/denisurusov/konspekt) for each and operate under it (e.g. `engineer`
+  brings ASR/ADR and executed-command provenance)
 - `.konspekt/OPERATING.md` — this project's operating loop and trigger policy
 - `.konspekt/instance/` — the live graph you maintain
 

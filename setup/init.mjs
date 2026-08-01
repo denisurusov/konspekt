@@ -66,8 +66,10 @@ if (has("--help") || has("-h")) {
     [
       "konspekt setup",
       "",
-      "  node setup/init.mjs [--name NAME] [--goal GOAL] [--push]",
+      "  node setup/init.mjs [--name NAME] [--goal GOAL] [--persona LAYER] [--push]",
       "      Scaffold a new .konspekt/ instance into the current repo.",
+      "      --persona activates a konspekt persona layer (repeatable),",
+      "      e.g. --persona engineer.",
       "",
       "  node setup/init.mjs --list",
       "      List available components.",
@@ -352,6 +354,15 @@ const name = opt("--name", basename(root));
 const slug =
   name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "project";
 const goal = opt("--goal", "ONE-LINE GOAL \u2014 replace with what this project is trying to achieve.");
+// --persona is repeatable and also accepts a comma list: --persona engineer
+const personas = args.flatMap((a, i) =>
+  a === "--persona" && args[i + 1] && !args[i + 1].startsWith("--")
+    ? args[i + 1].split(",").map((x) => x.trim()).filter(Boolean)
+    : []
+);
+const personasLine = personas.length
+  ? `personas: [${personas.join(", ")}]`
+  : "# personas: []   # optional persona layers, e.g. [engineer] \u2014 see spec/personas/";
 const ts = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
 if (existsSync(join(root, INSTANCE))) {
@@ -361,7 +372,7 @@ if (existsSync(join(root, INSTANCE))) {
 }
 
 const fill = (s) =>
-  s.replaceAll("{{NAME}}", name).replaceAll("{{SLUG}}", slug).replaceAll("{{GOAL}}", goal).replaceAll("{{TS}}", ts);
+  s.replaceAll("{{NAME}}", name).replaceAll("{{SLUG}}", slug).replaceAll("{{GOAL}}", goal).replaceAll("{{TS}}", ts).replaceAll("{{PERSONAS}}", personasLine);
 const tpl = (f) => fill(readFileSync(join(TPL, f), "utf8"));
 const put = (rel, content) => {
   const p = join(root, rel);
@@ -371,6 +382,7 @@ const put = (rel, content) => {
 };
 
 console.log(`Scaffolding konspekt into ${root}\n`);
+if (personas.length) console.log(`  persona layer(s): ${personas.join(", ")}\n`);
 
 put(`${INSTANCE}/project.md`, tpl("project.md"));
 put(`${INSTANCE}/edges/edges.md`, tpl("edges.md"));
