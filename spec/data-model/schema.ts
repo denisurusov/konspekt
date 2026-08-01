@@ -54,6 +54,8 @@ export type EdgeKind =
   | "marks"      // waypoint -> node (the branch it sits on / opened)
   | "supersedes";// entity -> entity (new replaces old; superseded = the `to`).
                  // proposed = flagged contradiction; accepted = confirmed.
+                 // Persona layers add further EdgeKinds via their registry
+                 // (see ../personas/); core carries none of them.
 
 // ---------- Cross-cutting ----------
 
@@ -96,6 +98,10 @@ interface Base {
   updatedAt: string;
   provenance: Provenance;
   review: Review;
+  subtype?: string;    // generic persona-layer discriminator. Core recognizes
+                       // the FIELD and leaves its VALUES to layers (see
+                       // ../personas/) — e.g. the engineer layer's "asr" (on a
+                       // Concept) and "adr" (on a Waypoint). Core defines none.
 }
 
 // ---------- Entities ----------
@@ -106,6 +112,8 @@ export interface Project {
   summary: Summary;  // composed from node summaries
   createdAt: string;
   updatedAt: string;
+  personas?: string[]; // persona layers this instance activates (see
+                       // ../personas/). Absent = core-only. e.g. ["engineer"].
 }
 
 export interface GraphNode extends Base {
@@ -147,10 +155,23 @@ export interface EntityRef {
   id: string;
 }
 
+// An edge end may address a content-addressed provenance file (e.g. an executed
+// command) instead of an entity. It is resolved the way sources/ is — filename
+// == git blob SHA == id — and is never entified, so it never enters the graph's
+// entity set or its orphan/inventory queries. The channel name namespaces the
+// ref; specific channels (e.g. the engineer layer's "command") are defined by
+// persona layers, not core.
+export type ProvenanceRefType = string;
+export interface ProvenanceRef {
+  type: ProvenanceRefType;  // channel, e.g. "command"
+  id: string;               // contentHash of <channel>/<id>.md (git blob SHA)
+}
+export type EdgeEndpoint = EntityRef | ProvenanceRef;
+
 export interface Edge extends Base {
   kind: EdgeKind;
-  from: EntityRef;
-  to: EntityRef;
+  from: EdgeEndpoint;
+  to: EdgeEndpoint;
   weight?: number;     // only meaningful for "relates" — link strength
 }
 
