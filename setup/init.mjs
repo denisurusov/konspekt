@@ -19,7 +19,9 @@
  *       Writes nothing. Exit 1 if anything has drifted.
  *
  * Scaffolding creates a `.konspekt/` umbrella — a minimal konspekt instance
- * plus an operating envelope — and adds a konspekt stanza to AGENTS.md.
+ * plus an operating envelope — and writes agent instruction files: the konspekt
+ * stanza in AGENTS.md (the cross-tool standard) plus CLAUDE.md and GEMINI.md
+ * pointers to it. --tool adds explicit per-tool files (cursor/copilot/windsurf).
  *
  * Components are the second mode, and the reason it exists: scaffolding is
  * create-or-refuse, so it cannot retrofit anything onto a live instance
@@ -66,10 +68,13 @@ if (has("--help") || has("-h")) {
     [
       "konspekt setup",
       "",
-      "  node setup/init.mjs [--name NAME] [--goal GOAL] [--persona LAYER] [--push]",
+      "  node setup/init.mjs [--name NAME] [--goal GOAL] [--persona LAYER] [--tool T] [--push]",
       "      Scaffold a new .konspekt/ instance into the current repo.",
       "      --persona activates a konspekt persona layer (repeatable),",
       "      e.g. --persona engineer.",
+      "      --tool writes an explicit per-tool pointer file (repeatable):",
+      "      cursor, copilot, windsurf. AGENTS.md + CLAUDE.md + GEMINI.md",
+      "      are always written; most agents read AGENTS.md natively.",
       "",
       "  node setup/init.mjs --list",
       "      List available components.",
@@ -363,6 +368,14 @@ const personas = args.flatMap((a, i) =>
 const personasLine = personas.length
   ? `personas: [${personas.join(", ")}]`
   : "# personas: []   # optional persona layers, e.g. [engineer] \u2014 see spec/personas/";
+// --tool writes an explicit per-tool pointer file (repeatable / comma list).
+// AGENTS.md + CLAUDE.md + GEMINI.md are always written; these are extras for
+// teams that want a native file per tool even though each reads AGENTS.md.
+const tools = args.flatMap((a, i) =>
+  a === "--tool" && args[i + 1] && !args[i + 1].startsWith("--")
+    ? args[i + 1].split(",").map((x) => x.trim().toLowerCase()).filter(Boolean)
+    : []
+);
 const ts = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
 if (existsSync(join(root, INSTANCE))) {
@@ -393,25 +406,59 @@ for (const d of ["nodes", "concepts", "noteworthy", "artifacts", "waypoints"]) {
 put(".konspekt/OPERATING.md", tpl("OPERATING.md"));
 put(".konspekt/NOTES.md", tpl("NOTES.md"));
 
-// AGENTS.md: append the konspekt stanza, or create the file with it.
+// Agent instruction files. AGENTS.md carries the konspekt stanza and is the
+// cross-tool open standard (read natively by Claude Code, Cursor, Codex,
+// Copilot, Grok, Windsurf, Zed, Aider, and others). CLAUDE.md and GEMINI.md are
+// thin pointers to it, for the tools that key off their own filename; the stanza
+// stays single-source in AGENTS.md. --tool adds explicit per-tool files.
 const stanza = tpl("AGENTS-stanza.md");
-const agentsPath = join(root, "AGENTS.md");
-if (existsSync(agentsPath)) {
-  const cur = readFileSync(agentsPath, "utf8");
-  if (cur.includes("## konspekt project state")) {
-    console.log("  = AGENTS.md already has a konspekt stanza (skipped)");
+const pointer = tpl("POINTER-stanza.md");
+const MARKER = "## konspekt project state";
+
+const appendStanza = (rel, body, label) => {
+  const p = join(root, rel);
+  if (existsSync(p)) {
+    const cur = readFileSync(p, "utf8");
+    if (cur.includes(MARKER)) {
+      console.log(`  = ${rel} already has a konspekt stanza (skipped)`);
+    } else {
+      writeFileSync(p, cur.replace(/\s*$/, "") + "\n\n" + body);
+      console.log(`  ~ ${rel} (appended ${label})`);
+    }
   } else {
-    writeFileSync(agentsPath, cur.replace(/\s*$/, "") + "\n\n" + stanza);
-    console.log("  ~ AGENTS.md (appended konspekt stanza)");
+    mkdirSync(dirname(p), { recursive: true });
+    writeFileSync(p, body);
+    console.log("  +", rel);
   }
-} else {
-  put("AGENTS.md", stanza);
+};
+
+appendStanza("AGENTS.md", stanza, "konspekt stanza");
+appendStanza("CLAUDE.md", pointer, "konspekt pointer");
+appendStanza("GEMINI.md", pointer, "konspekt pointer");
+
+for (const t of tools) {
+  if (t === "cursor") {
+    const cp = join(root, ".cursor/rules/konspekt.mdc");
+    if (existsSync(cp)) {
+      console.log("  = .cursor/rules/konspekt.mdc already present (skipped)");
+    } else {
+      mkdirSync(dirname(cp), { recursive: true });
+      writeFileSync(cp, tpl("cursor-rule.mdc"));
+      console.log("  + .cursor/rules/konspekt.mdc");
+    }
+  } else if (t === "copilot") {
+    appendStanza(".github/copilot-instructions.md", pointer, "konspekt pointer");
+  } else if (t === "windsurf") {
+    appendStanza(".windsurfrules", pointer, "konspekt pointer");
+  } else {
+    console.log(`  ! unknown --tool "${t}" (known: cursor, copilot, windsurf)`);
+  }
 }
 
 console.log("\nDone. Next:");
 console.log(`  1. Edit ${INSTANCE}/project.md \u2014 set the goal and summary.`);
 console.log("  2. Review .konspekt/OPERATING.md \u2014 the operating policy you just adopted.");
-console.log("  3. Commit:  git add .konspekt AGENTS.md && git commit -m 'adopt konspekt'");
+console.log("  3. Commit:  git add .konspekt AGENTS.md CLAUDE.md GEMINI.md && git commit -m 'adopt konspekt'");
 const comps = listComponents();
 if (comps.length) {
   console.log(`  4. Optional add-ons: node setup/init.mjs --list  (${comps.join(", ")})`);
@@ -420,7 +467,10 @@ if (comps.length) {
 if (has("--push")) {
   console.log("\nPushing...");
   try {
-    execSync("git add .konspekt AGENTS.md", { cwd: root, stdio: "inherit" });
+    const agentFiles = ["AGENTS.md", "CLAUDE.md", "GEMINI.md",
+      ".github/copilot-instructions.md", ".windsurfrules", ".cursor/rules/konspekt.mdc"]
+      .filter((f) => existsSync(join(root, f)));
+    execSync(`git add .konspekt ${agentFiles.join(" ")}`, { cwd: root, stdio: "inherit" });
     execSync('git commit -m "adopt konspekt project state"', { cwd: root, stdio: "inherit" });
     execSync("git push", { cwd: root, stdio: "inherit" });
     console.log("Pushed.");

@@ -25,8 +25,14 @@ A `.konspekt/` umbrella at the root of your project repo:
     ├─ OPERATING.md         # this project's operating policy (the loop, triggers)
     └─ NOTES.md             # human scratchpad (the `note:` convention)
 
-…plus a **konspekt stanza** added to your `AGENTS.md` (created if absent), so any
-agent working in the repo reads the instance first and respects propose-accept.
+…plus agent instruction files so any tool working in the repo reads the instance
+first and respects propose-accept. `AGENTS.md` carries the **konspekt stanza**
+(created if absent) — it is the open cross-tool standard, read natively by Claude
+Code, Cursor, Codex, Copilot, Grok, Windsurf, Zed, Aider, and others. `CLAUDE.md`
+and `GEMINI.md` are written as thin **pointers** to it, for the tools that key off
+their own filename; the stanza stays single-source in `AGENTS.md`. Pass
+`--tool cursor|copilot|windsurf` (repeatable) for explicit per-tool files where a
+team wants them — redundant with native `AGENTS.md` support, so off by default.
 
 The split is deliberate: `instance/` is the portable unit — it is what moves
 between platforms; `OPERATING.md` / `NOTES.md` are local envelope, not part of
@@ -45,10 +51,10 @@ From the root of the repo you want to adopt konspekt (needs Node 18+). Copy this
 
 Review what it wrote, then commit:
 
-    git add .konspekt AGENTS.md && git commit -m "adopt konspekt project state"
+    git add .konspekt AGENTS.md CLAUDE.md GEMINI.md && git commit -m "adopt konspekt project state"
 
 Or let the script do it — add `--push`. It is idempotent: it refuses to clobber
-an existing `.konspekt/instance/`, and it skips the `AGENTS.md` stanza if already
+an existing `.konspekt/instance/`, and it skips an agent-file stanza already
 present.
 
 ## Then what

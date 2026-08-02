@@ -1,0 +1,9 @@
+---
+description: konspekt project state — read AGENTS.md
+alwaysApply: true
+---
+
+This repo carries konspekt-format project state under `.konspekt/`. Read
+`AGENTS.md` at the repo root for how to operate on it — propose-accept, persona
+layers, and content-addressed provenance. That file is the single source; this
+rule only points to it.
